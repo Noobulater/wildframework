@@ -1,0 +1,16 @@
+include("sh_config.lua")
+include("sh_resource.lua")
+
+local function initPostEntity()
+	if world == nil then return end
+	world.initialize()
+end
+hook.Add("InitPostEntity", "worldinit", initPostEntity )
+
+local function worldThink()
+	if world == nil then return end
+	if world.think then
+		world.think()
+	end
+end
+hook.Add("Think", "worldThink", worldThink)

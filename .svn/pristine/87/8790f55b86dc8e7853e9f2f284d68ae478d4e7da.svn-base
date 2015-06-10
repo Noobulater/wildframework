@@ -1,0 +1,236 @@
+--
+if SERVER then
+	util.AddNetworkString( "networkMusic" )
+
+	function networkMusic( ply, musicPath, loop, fadeOut )
+		ply = ply or player.GetAll()
+
+		if loop then loop = 1 else loop = 0 end
+		if fadeOut then fadeOut = 1 else fadeOut = 0 end
+
+		net.Start( "networkMusic" )
+			net.WriteString(musicPath or "")
+			net.WriteUInt( loop, 2 )
+			net.WriteUInt( fadeOut, 2 )
+		net.Send( ply )	
+	end
+
+end
+if CLIENT then
+	net.Receive( "networkMusic", function(len)  
+		local musicPath = net.ReadString() 
+		local loop = tobool(net.ReadUInt(2))
+		local fadeOut = tobool(net.ReadUInt( 2 ))
+		
+		if loop == 1 then loop = true else loop = false end
+		if fadeOut == 1 then fadeOut = true else fadeOut = false end
+
+		LocalPlayer():PlayMusic(musicPath, loop, fadeOut)
+	end)
+end
+
+local PMETA = FindMetaTable("Player")
+
+function PMETA:PlayMusic( musicPath, loop, fadeOut )
+	if SERVER then
+		networkMusic( self, musicPath, loop, fadeOut )
+	else
+		if musicPath != "" then
+			getMusicPlayer().play( musicPath, loop, fadeOut )
+		else
+			getMusicPlayer().stop()
+		end
+	end
+end
+
+local musicLengths = {} -- Couldn't really think of a better way
+musicLengths["music/prepare/madexperiment.mp3"] = 121
+musicLengths["music/prepare/FreeFromFear.mp3"] = 153
+musicLengths["music/prepare/saveroomcvx.mp3"] = 115
+musicLengths["music/prepare/RE1saveroom.mp3"] = 175
+
+musicLengths["music/prepare/ZombieRiffs.mp3"] = 66
+
+musicLengths["music/combat/Malf.mp3"] = 93
+musicLengths["music/combat/BattleGame.mp3"] = 132
+musicLengths["music/combat/RE4Merc.mp3"] = 218
+musicLengths["music/combat/RE5Merc.mp3"] = 202
+musicLengths["music/combat/MilitaryBase.mp3"] = 137
+
+function randomPrepareMusic()
+	local randomTable = {}
+
+	for musicPath, length in pairs(musicLengths) do
+		if string.gsub(musicPath, "prepare", "") != musicPath then
+			table.insert(randomTable, musicPath)
+		end
+	end
+
+	return table.Random(randomTable)
+end
+
+function randomCombatMusic()
+	local randomTable = {}
+
+	for musicPath, length in pairs(musicLengths) do
+		if string.gsub(musicPath, "combat", "") != musicPath then
+			table.insert(randomTable, musicPath)
+		end
+	end
+	
+	return table.Random(randomTable)
+end
+
+function randomMusic()
+	local randomTable = {}
+
+	for musicPath, length in pairs(musicLengths) do
+		table.insert(randomTable, musicPath)
+	end
+
+	return table.Random(randomTable)
+end
+
+if CLIENT then
+
+classMusicPlayer = {}
+
+local baseFolder = "http://www.shellshockedgaming.com/garrysmod/sound/"
+
+function classMusicPlayer.new()
+	local public = {}
+
+	local currentPath 
+	local current
+	local loop 
+	local fadeOut
+	local endTime
+
+	local quene = {} -- these are music paths
+
+	function public.setCurrent( soundChannel )
+		current = soundChannel
+	end
+
+	function public.getCurrent()
+		return current
+	end
+
+	function public.setCurrentPath( musicPath )
+		currentPath = musicPath
+	end
+
+	function public.getCurrentPath()
+		return currentPath
+	end
+
+	function public.setLoop( loopBool )
+		loop = loopBool
+	end
+
+	function public.getLoop()
+		return loop
+	end
+
+	function public.setFadeOut( fadeBool )
+		fadeOut = fadeBool
+	end
+
+	function public.getFadeOut()
+		return fadeOut
+	end
+
+	function public.setEndTime( newEndTime )
+		endTime = newEndTime
+	end
+
+	function public.getEndTime()
+		return endTime
+	end
+
+	function public.force( musicPath )
+
+	end
+
+	function public.quene( position, musicPath, loop, fadeOut )
+		if position == nil then
+			quene[table.Count(quene)] = musicPath
+		else
+			for i = 1, table.Count(quene) do
+				if i == position then
+					quene[i] = {musicPath, loop or false, fadeOut or false}
+					break
+				end
+			end
+		end
+	end
+
+	function public.playNext()
+		if quene[1] != nil then
+			public.play(quene[1][1], quene[1][2], quene[1][3])
+			table.remove(quene, 1)
+		end
+	end
+
+	function public.pause()
+		current:Pause()
+	end
+
+	function public.stop()
+		current:Stop()
+	end
+
+	local holdThink
+
+	function public.play( musicPath, loop, fadeOut )
+		holdThink = true -- Because it takes some time to get the music from the webserver we have this to stop it for a brief second
+		sound.PlayURL(baseFolder..musicPath, "", function( soundChannel ) 
+			if current && current:IsValid() then current:Stop() end
+			public.setCurrentPath(musicPath) 
+			public.setCurrent(soundChannel) 
+			public.setLoop(loop or false) 
+			public.setFadeOut( fadeOut or false) 
+			public.setEndTime(CurTime() + (musicLengths[musicPath] or 10))
+			soundChannel:SetVolume(1)
+			holdThink = false
+		end)
+	end
+
+	function public.think()
+		if holdThink then return end
+		if current != nil then
+			if !current:IsValid() then
+				public.play(currentPath, loop, fadeOut)
+			else
+				if fadeOut then 
+					local percent = (endTime - CurTime()) / 5
+					current:SetVolume(math.Clamp(percent,0,1))
+				end
+				if endTime < CurTime() then
+					if loop then
+						public.play(currentPath, loop, fadeOut)
+					else
+						public.playNext()
+					end
+				end
+
+			end
+		end
+	end
+	
+	return public
+end
+
+local musicControl = classMusicPlayer.new()
+
+function getMusicPlayer()
+	return musicControl
+end
+
+local function musicPlayerThink()
+	getMusicPlayer().think()
+end
+hook.Add("Think", "musicPlayerThink", musicPlayerThink) 
+--musicControl.play("music/prepare/ZombieRiffs.mp3", false, false)
+
+end

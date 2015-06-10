@@ -1,0 +1,66 @@
+include("sh_resource.lua")
+include("shared.lua")
+include("sh_config.lua")
+
+
+include('engine/cl_view.lua')
+include('engine/extras/sh_ballistics_external.lua')
+include('engine/extras/sh_ballistics_terminal.lua')
+include('engine/extras/sh_dynamicmap.lua')
+include('engine/extras/sh_gameHooks.lua')
+include('engine/extras/sh_inventory.lua')
+include('engine/extras/sh_math.lua')
+include('engine/extras/sh_playerHooks.lua')
+include('engine/extras/sh_sqlex.lua')
+include('engine/extras/sh_table.lua')
+include('engine/extras/sh_util.lua')
+include('engine/extras/sh_utilex.lua')
+include('engine/world/cl_world.lua')
+include('engine/world/rendering/cl_rendering.lua')
+include('engine/world/rendering/renderData.lua')
+include('engine/world/rendering/renderEntry.lua')
+include('game/settlements.lua')
+include('game/items/sh_food.lua')
+include('game/settlements/combine_settlements.lua')
+
+
+function GM:HUDShouldDraw( name )
+	if (name == "CHudCrosshair") then
+		return false
+	end
+	return true
+end
+
+-- local function hudpainthook()
+-- 	local radx, rady = ScrW() - 100, ScrH() - 100
+
+-- 	surface.SetDrawColor(0,255,0,255)
+-- 	surface.DrawCircle(radx, rady, 50 , Color(0,255,0,255))
+
+-- 	surface.DrawRect(radx - 10, rady - 10, 20, 20)
+
+-- 	surface.SetDrawColor(255,0,0,155)
+
+-- 	local yaw = LocalPlayer():GetAngles().y
+
+-- 	local vect = Vector(0,0,0)
+-- 	local pos = LocalPlayer():GetPos()
+-- 	pos.z = 0
+
+-- 	local radarScale = .1
+-- 	local result = vect - pos
+-- 	local norm = (result):GetNormal()
+
+-- 	local distance = pos:Distance(vect) * radarScale
+
+
+-- 	local x = radx + math.Clamp(result.y * radarScale, -50, 50)  
+-- 	local y = rady + math.Clamp(result.x * radarScale, -50, 50) 
+
+-- 	--radx - 
+-- 	surface.DrawRect(x - 10, y - 10, 20, 20)
+
+-- 	draw.DrawText( math.Round(distance) , "default", x - 10, y, Color(255, 0, 0, 255))
+-- end
+-- hook.Add("HUDPaint", "suitRadar", hudpainthook)
+

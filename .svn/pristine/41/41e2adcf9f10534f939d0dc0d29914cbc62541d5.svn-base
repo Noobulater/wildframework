@@ -1,0 +1,6 @@
+local PMETA = FindMetaTable("Player")
+
+function PMETA:canSelectCharacter()
+	if util.isActivePlayer(self) then return false end
+	return true
+end

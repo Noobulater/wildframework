@@ -1,0 +1,301 @@
+classWeaponData = {}
+
+if SERVER then
+	util.AddNetworkString( "updateActiveWeapon" )
+	function updateActiveWeapon( slot, ply )
+		ply = ply or player.GetAll()
+
+		net.Start( "updateActiveWeapon" )
+			net.WriteInt( slot, 6 )
+		net.Send( ply )	
+	end
+
+end
+
+if CLIENT then
+	net.Receive( "updateActiveWeapon", function(len)   
+		local weaponSlot = net.ReadInt( 6 )
+
+		local function func()
+			local wep = LocalPlayer():GetActiveWeapon()
+			if !IsValid(wep) or wep:GetClass() != "weapon_loader" then print("Weapon: Player doesn't have weapon loader") return false end
+
+			local weapon = LocalPlayer():getInventory().getSlot(weaponSlot)
+			if weapon == 0 then weapon = nil end
+			wep:SetWeapon(weapon) 
+		end
+
+		timer.Simple(LocalPlayer():Ping()/1000 + 0.05, function() func() end)
+
+	end)
+end
+
+
+function classWeaponData.new( refOwner )
+	
+	local public = classEquipmentData.new( refOwner )
+
+	public.setPrimaryEQSlot(-1)
+
+	local custom = true
+	local wClass = "weapon_loader" -- ONLY SET THIS IF YOU AREN'T USING A CUSTOM WEAPON
+
+--- All the variables, The methods are at the bottem becasue there is afuckton of them.
+	local fireSound
+	local ammoType
+	local altAmmoType
+	local holdType 
+	local fireRate
+	local damage
+	local accuracy
+	local clipSize 
+	local reloadTime
+	local numBullets
+	local automatic
+	local tracerName = "Tracer"
+-------------------------------------------------------------------------
+-------------------------------------------------------------------------
+
+	-- function public.deploy( user )
+	-- 	for index, slot in pairs(public.getEQSlots()) do
+	-- 		if user:getInventory().getSlot(slot) == public then
+	-- 			weaponSlot = slot
+	-- 			break
+	-- 		end
+	-- 	end
+	-- 	if weaponSlot then
+	-- 		user:Give(wClass)
+
+	-- 		user:SelectWeapon(wClass)
+
+	-- 		if !custom then	return false end 
+
+	-- 		local wep = user:GetActiveWeapon()
+	-- 		if !IsValid(wep) or wep:GetClass() != "weapon_loader" then print("Weapon: Player doesn't have weapon loader") return false end
+
+	-- 		local weaponSlot = nil
+
+	-- 		wep:SetWeapon(public)
+			
+	-- 		updateActiveWeapon(weaponSlot, user)
+	-- 	end
+	-- end
+
+	function public.equip( user )
+		if SERVER then
+			local result = user:getInventory().findItem( public )
+
+			local slotToSwitchTo = public.getPrimaryEQSlot() 
+			local slots = public.getEQSlots()
+			for i = 1, table.Count(public.getEQSlots()) do
+				local eqSlot = slots[i]
+				if eqSlot != nil then
+					if user:getInventory().getSlot(eqSlot) == 0 then
+						slotToSwitchTo = eqSlot
+					end
+				end
+			end
+
+			user:getInventory().swapSlots( slotToSwitchTo, result )
+
+			if util.isActivePlayer(user) then 
+				user:Give(wClass)
+
+				user:SelectWeapon(wClass)
+
+				if !custom then	return false end 
+
+				local wep = user:GetActiveWeapon()
+				if !IsValid(wep) or wep:GetClass() != "weapon_loader" then print("Weapon: Player doesn't have weapon loader") return false end
+
+				wep:SetWeapon(public)	
+
+				updateActiveWeapon(slotToSwitchTo, user)
+			end
+		end
+	end
+	
+	function public.unEquip( user )
+		if SERVER then
+			if !custom then user:StripWeapon(wClass) return false end 
+			if util.isActivePlayer(user) then 
+				local wep = user:GetActiveWeapon()
+
+				if !IsValid(wep) or wep:GetClass() != "weapon_loader" then print("Weapon: Player doesn't have weapon loader") return false end
+
+				public.primClip = wep:Clip1() or 0 
+
+				if wep:GetWeapon() != nil && wep:GetWeapon().getClass() == public.getClass() then
+					user:StripWeapon(public.getWClass())
+					user:SetNWString("weaponClass", "")
+				end
+			end
+		end
+	end
+
+	function public.equipped( user )
+		local result = user:getInventory().findItem( public )
+		if result == nil then return false end
+		if result < 0 then
+			return true
+		end
+		return false
+	end
+
+	function public.primaryFire( user , swep )
+		return true -- continues to shoot boolets
+	end
+
+	function public.reload( user , swep )
+		local pool = user:GetAmmoCount( (ammoType or "pistol") )
+		
+		local removePool = 0
+
+		if pool >= clipSize then
+			removePool = clipSize or 10
+			swep:SetClip1( clipSize )
+		else
+			removePool = math.Clamp(clipSize - swep:Clip1(), 0, pool)
+			swep:SetClip1( swep:Clip1() + removePool)
+		end
+		user:SetAmmo( pool - removePool , (ammoType or "pistol") )
+	end
+
+	function public.callBack( ply, tr, dmgInfo ) 
+		-- This is used when the weapon is fired
+	end
+
+-------------------------------------------------------------------------
+-------------------------------------------------------------------------
+
+	function public.paperDoll(ply, prop)
+		local BoneIndx = ply:LookupBone("ValveBiped.Bip01_R_Hand")
+		local BonePos , BoneAng = ply:GetBonePosition( BoneIndx )
+
+		prop:SetPos(BonePos)
+		prop:SetAngles(BoneAng + Angle(0,0,180))
+		prop:SetModel(public.getModel())
+
+	end
+
+-------------------------------------------------------------------------
+
+	function public.setFireSound( newFireSound )
+		fireSound = Sound(newFireSound) or newFireSound
+	end
+
+	function public.getFireSound( )
+		return fireSound
+	end
+
+	function public.setCustom( newCustom )
+		custom = newCustom
+	end
+
+	function public.getCustom( )
+		return custom
+	end
+
+	function public.setWClass( newWClass )
+		wClass = newWClass
+	end
+
+	function public.getWClass( )
+		return wClass
+	end
+
+	function public.setAmmoType( newAmmoType )
+		ammoType = newAmmoType 
+	end
+
+	function public.getAmmoType( )
+		return ammoType
+	end
+
+	function public.setAltAmmoType( newAltAmmoType )
+		altAmmoType = newAltAmmoType 
+	end
+
+	function public.getAltAmmoType( )
+		return altAmmoType
+	end
+
+	function public.setHoldType( newHoldType )
+		holdType = newHoldType 
+	end
+
+	function public.getHoldType( )
+		return holdType
+	end
+
+	function public.setFireRate( newFireRate )
+		fireRate = newFireRate 
+	end
+
+	function public.getFireRate( )
+		return fireRate
+	end
+
+	function public.setDamage( newDamage )
+		damage = newDamage 
+	end
+
+	function public.getDamage( )
+		return damage
+	end
+
+	function public.setAccuracy( newAccuracy )
+		accuracy = newAccuracy 
+	end
+
+	function public.getAccuracy( )
+		return accuracy
+	end
+
+	function public.setClipSize( newClipSize )
+		clipSize = newClipSize 
+	end
+
+	function public.getClipSize( )
+		return clipSize
+	end
+
+	function public.setReloadTime( newReloadTime )
+		reloadTime = newReloadTime 
+	end
+
+	function public.getReloadTime( )
+		return reloadTime
+	end
+
+	function public.setNumBullets( newNumBullets )
+		numBullets = newNumBullets 
+	end
+
+	function public.getNumBullets( )
+		return numBullets
+	end
+
+	function public.setAutomatic( newAutomatic )
+		automatic = newAutomatic 
+	end
+
+	function public.getAutomatic( )
+		return automatic
+	end
+
+	function public.setTracerName( newTracerName )
+		tracerName = newTracerName 
+	end
+
+	function public.getTracerName( )
+		return tracerName
+	end
+
+	function public.isWeapon()
+		return true
+	end
+
+	return public
+
+end

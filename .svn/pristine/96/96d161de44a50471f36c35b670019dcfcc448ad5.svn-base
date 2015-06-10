@@ -1,0 +1,64 @@
+classFate = {}
+
+if SERVER then 
+	util.AddNetworkString( "updateFate" )
+
+	function updateFate( ply , newFate )
+		ply = ply or player.GetAll()
+		net.Start( "updateFate" )
+			net.WriteUInt( newFate , 32 )	
+		net.Send( ply )	
+	end
+end
+
+if CLIENT then
+	net.Receive( "updateFate", function(len)   
+		local fate = net.ReadUInt( 32 )
+		LocalPlayer():getFate().setFate( fate )		
+	end)
+end
+
+function classFate.new( refOwner ) 
+
+	local public = {}
+
+	local fate 
+	local nextPay = -1
+	local owner = refOwner
+
+	function public.setOwner( newOwner )
+		if !IsValid(newOwner) then ErrorNoHalt("Fate: not a valid owner") end
+		owner = newOwner
+	end
+
+	function public.getOwner()
+		return owner
+	end
+
+	function public.addFate( newFate )
+		public.setFate( fate + newFate )
+
+	end
+
+	function public.removeFate( newFate )
+		newFate = fate - newFate 
+
+		if newFate < 0 then newFate = 0 end
+
+		public.setFate( newFate )
+	end
+
+	function public.setFate( newFate )
+		fate = newFate
+		if SERVER then
+			updateFate( owner , fate )
+		end
+	end
+
+	function public.getFate()
+		return fate
+	end
+
+	return public
+
+end

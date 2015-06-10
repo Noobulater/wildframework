@@ -1,0 +1,52 @@
+function characterRoster(parent)
+	local dupe = classFillerPanel.new( parent )
+	dupe:SetSize(parent:GetWide(),parent:GetTall())
+	dupe.Paint = function() 
+		surface.SetDrawColor(0,0,0,155)
+		surface.DrawRect( 0, 0, dupe:GetWide(), dupe:GetTall() )
+	end
+	local characters = LocalPlayer():getData().getCharacters()
+
+	for i = 1, 3 do 
+		if i > 0 then
+			local characterData = LocalPlayer():getData().getCharacter(i)
+
+			local characterPanel = classOptionsTab.new(dupe)
+
+			characterPanel:SetSize(dupe:GetWide()/3, dupe:GetTall())
+			characterPanel.Paint = function() end
+
+			if characterData != nil then
+				local containerPanel = classOptionsTab.new(characterPanel)
+				containerPanel:SetSize(characterPanel:GetWide() * (2/3), characterPanel:GetTall() - 100)
+				containerPanel:SetPos(characterPanel:GetWide() * (1/2) - containerPanel:GetWide()/2, 0)
+				containerPanel.Paint = function() end
+				guiPaintCharacter(characterData, containerPanel)
+
+				local selectButton = classOptionsTab.new(characterPanel)
+				selectButton:SetText("Select Character")
+				selectButton:SetSize(characterPanel:GetWide()/2, 100)
+				selectButton:SetPos(0, characterPanel:GetTall() - selectButton:GetTall())
+				selectButton.DoClick = function() parent.open("characterManagement", i) end
+
+				local deleteCharacter = classOptionsTab.new(characterPanel)
+				deleteCharacter:SetText("Delete Character")
+				deleteCharacter:SetSize(characterPanel:GetWide()/2, 100)
+				deleteCharacter:SetPos(characterPanel:GetWide()/2, characterPanel:GetTall() - deleteCharacter:GetTall())
+				deleteCharacter.DoClick = function() RunConsoleCommand("deleteCharacter", i) parent.clear() end
+
+			else
+				local createButton = classOptionsTab.new(characterPanel)
+				createButton:SetText("Create Character")
+				createButton:SetSize(characterPanel:GetWide(), 100)
+				createButton:SetPos(0, characterPanel:GetTall()/2 - createButton:GetTall()/2)
+				createButton.DoClick = function() RunConsoleCommand("openCharacterCreation") parent.clear() end
+			end
+
+			dupe.addItem(characterPanel)
+		end
+	end
+
+	return dupe
+end
+classMainMenu.SCREENS["characterRoster"] = characterRoster

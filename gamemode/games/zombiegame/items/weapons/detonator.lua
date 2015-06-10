@@ -1,0 +1,43 @@
+local class = "detonator"
+
+local function generate()
+	local weapon = classWeaponData.new()
+	weapon.setClass(class)
+	weapon.setName("C4 Detonator")
+	weapon.setDescription("Detonates C4 You have Placed")
+	weapon.setFireSound("buttons/button14.wav")	
+	weapon.setFireRate( 2 )
+	weapon.setClipSize(-1)
+	weapon.setHoldType("pistol")
+	weapon.setModel("models/alyx_emptool_prop.mdl")
+	weapon.setPrimaryEQSlot(-3)
+	weapon.primClip = -1
+	
+	weapon.primaryFire = function( user, swep )
+		if SERVER then
+			sound.Play((weapon.getFireSound() or swep.Primary.Sound), user:GetPos() + Vector(0,0,30), 75, 100, 1 )
+			timer.Simple(.5, function() 
+								for index, bomb in pairs(ents.FindByClass("c4")) do
+									if bomb:GetDTEntity(0) == user then
+										bomb:explode()
+									end
+								end
+							end)
+			swep.nextPFire = CurTime() + weapon.getFireRate()
+		end
+		return false
+	end	
+
+	function weapon.paperDoll(ply, prop)
+		local BoneIndx = ply:LookupBone("ValveBiped.Bip01_R_Hand")
+		local BonePos , BoneAng = ply:GetBonePosition( BoneIndx )
+
+		prop:SetPos(BonePos + BoneAng:Forward() * 3 + BoneAng:Up() * -2 + BoneAng:Right() * 2 )
+		prop:SetAngles(BoneAng + Angle(90,0,180))
+		prop:SetModel(weapon.getModel())
+	end
+
+	return weapon
+end
+
+classItemData.register( class, generate )

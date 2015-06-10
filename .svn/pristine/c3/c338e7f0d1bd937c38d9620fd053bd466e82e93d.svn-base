@@ -1,0 +1,3 @@
+function GM:OnSpawnMenuOpen( )
+	RunConsoleCommand("swapWeapons")
+end

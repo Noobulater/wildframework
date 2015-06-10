@@ -1,0 +1,190 @@
+classCharacterData = {}
+
+
+if SERVER then 
+	util.AddNetworkString( "networkSelectedCharacter" )
+	util.AddNetworkString( "networkDeleteCharacter")
+	util.AddNetworkString( "networkCharacter" )
+			
+	function networkSelectedCharacter( ply )
+		ply = ply or player.GetAll()
+
+		net.Start( "networkSelectedCharacter" )
+			net.WriteUInt( ply:getCharacterIndex(), 6 )	
+		net.Send( ply )	
+	end
+
+	function networkDeleteCharacter( ply , charNum )
+		ply = ply or player.GetAll()
+
+		net.Start( "networkDeleteCharacter" )
+			net.WriteUInt( charNum or 0, 6 )	
+		net.Send( ply )	
+	end
+
+	function networkCharacter( slot, charData, ply )
+		if charData == nil then return end
+		ply = ply or player.GetAll()
+		net.Start( "networkCharacter" )
+			net.WriteUInt(slot, 6)
+			net.WriteEntity(charData.getOwner())	
+			net.WriteString(charData.getName() or "" )
+			net.WriteString(charData.getModel() or "" )
+			net.WriteUInt(charData.getInventoryID(), 32)	
+		net.Send( ply )
+	end	
+end
+if CLIENT then
+	net.Receive( "networkSelectedCharacter", function(len)   
+		local newCharacter = net.ReadUInt( 6 )
+
+		LocalPlayer():selectCharacter(newCharacter)
+	end)
+	net.Receive( "networkDeleteCharacter", function(len)   
+		local characterSlot = net.ReadUInt( 6 )
+		if characterSlot == 0 then return end
+		LocalPlayer():getData().deleteCharacter(characterSlot)
+	end)	
+	net.Receive( "networkCharacter", function(len)  
+		local slot = net.ReadUInt( 6 )
+
+		local owner = net.ReadEntity()
+		local name = net.ReadString()
+		local model = net.ReadString()
+		local uniqueID = net.ReadUInt( 32 ) 
+
+		if owner != LocalPlayer() then return false end
+
+		local newChar = classCharacter.new( owner )
+		newChar.setName(name)
+		newChar.setModel(model)
+		newChar.setInventoryID(uniqueID)
+
+		owner:getData().setCharacter(slot, newChar)
+	end)	
+end
+
+function classCharacterData.new( refOwner )
+
+	local public = {}
+	local characterList = {}
+	local owner = refOwner or nil -- this is a backwards reference to the owner, could be player, prop or npc
+	local selectedCharacter = 0
+	local fate = classFate.new( refOwner )
+
+	function public.setOwner( newOwner )
+		if !IsValid(newOwner) then print("characterList: not a valid owner") end
+		owner = newOwner
+	end
+
+	function public.getOwner()
+		return owner
+	end
+
+	function public.setCharacter( slot, newCharData )
+		characterList[ slot ] = newCharData
+		if SERVER then
+			networkCharacter(slot, newCharData, refOwner)
+		end
+	end
+
+	function public.addCharacter( newCharData )
+		public.setCharacter(table.Count(characterList), newCharData)
+	end
+
+	function public.deleteCharacter( charNum )
+		public.setCharacter(charNum, nil)
+		if SERVER then
+			networkDeleteCharacter(refOwner, charNum)
+		end
+	end
+
+	function public.selectCharacter( newSelectedCharacter )
+		selectedCharacter = newSelectedCharacter
+		if SERVER then
+			networkSelectedCharacter( refOwner )
+		end
+	end
+
+	function public.getCharacter( slot )
+		return characterList[ slot ]
+	end
+
+	function public.getCharacters( )
+		return characterList
+	end
+
+	function public.getCurrentCharacterIndex()
+		return selectedCharacter
+	end
+
+	function public.getCurrentCharacter()
+		return characterList[selectedCharacter]
+	end
+
+	function public.setFate( newFate )
+		fate = newFate
+	end
+
+	function public.getFate()
+		return fate
+	end
+
+	if SERVER then 
+		function public.toString()
+			local compiledString = fate.toString() .. "&"
+			for slot, character in pairs(characterList) do
+				if slot > 0 then
+					compiledString = compiledString .. slot
+					compiledString = compiledString .. "@" -- these are just random characters to signify different stuff
+					compiledString = compiledString .. character.toString() .. "%"
+				end
+			end
+
+			return compiledString
+		end
+
+		function public.loadFromString( compiledString )
+			if compiledString == nil then print("Character : No String Provided to load From") return end
+			local fateCharacterTable = string.Explode("&", compiledString)
+			local fateString = fateCharacterTable[1]
+			local character = fateCharacterTable[2]
+
+			fate.loadFromString(fateString)
+
+			local characterTable = string.Explode("%", character )
+
+			for _, characterString in pairs(characterTable) do
+				-- This a brutal mess.... I'm so, so Sorry for writing this. 
+				local characterString = string.Explode("@", characterString)
+
+				local slot = tonumber(characterString[1]) -- this NEEDS to be a number
+
+				local characterString = characterString[2]
+
+				if characterString != nil then
+					local explodedCharacter = string.Explode("$", characterString)
+					local characterString = explodedCharacter[1]
+					local inventoryString = explodedCharacter[2]
+
+					local character = classCharacter.new(refOwner)
+
+					character.loadFromString(characterString)
+					character.getInventory().loadFromString(inventoryString)
+
+					public.setCharacter(slot, character)
+				end
+			end
+		end
+	end
+
+
+	local default = classCharacter.new( refOwner )
+	default.setModel(refOwner:GetModel() or "models/player/group01/female_03.mdl")
+	default.setName("DEFAULT")
+
+	public.setCharacter(0, default)
+
+	return public 
+
+end

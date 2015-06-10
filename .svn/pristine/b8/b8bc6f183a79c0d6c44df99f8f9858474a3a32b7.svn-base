@@ -1,0 +1,69 @@
+surface.CreateFont( "zgClipText", {
+ font = "HUDNumber1",
+ size = 48,
+ weight = 600,
+ blursize = 0,
+ scanlines = 0,
+ antialias = true,
+ underline = false,
+ italic = false,
+ strikeout = false,
+ symbol = false,
+ rotary = false,
+ shadow = false,
+ additive = false,
+ outline = true
+} )
+
+surface.CreateFont( "zgAmmoReserve", {
+ font = "HUDNumber1",
+ size = 24,
+ weight = 500,
+ blursize = 0,
+ scanlines = 0,
+ antialias = true,
+ underline = false,
+ italic = false,
+ strikeout = false,
+ symbol = false,
+ rotary = false,
+ shadow = false,
+ additive = false,
+ outline = true
+} )
+
+local function ammoPaint()
+	if IsValid(LocalPlayer():GetActiveWeapon()) then
+		local ammo = LocalPlayer():GetActiveWeapon():Clip1()
+		paintText(ammo, "zgClipText", ScrW() * (7/8), ScrH() * (7/8), Color(255,255,255,155), true, true)
+
+		local ammoType = LocalPlayer():GetActiveWeapon():GetPrimaryAmmoType()
+		local ammoLeft = 0
+		if LocalPlayer():GetActiveWeapon():GetClass() == "weapon_loader" then
+
+			local weapon = LocalPlayer():GetActiveWeapon():GetWeapon()
+			if weapon != nil then
+				ammoType = weapon.getAmmoType()
+
+				if LocalPlayer():getInventory() != nil then
+					for key, item in pairs(LocalPlayer():getInventory().getItems()) do
+						if item != 0 && item.getClass() == ammoType then 
+							ammoLeft = ammoLeft + tonumber(item.getExtras())
+						end
+					end
+				end
+			end
+		else
+			ammoLeft = LocalPlayer():GetAmmoCount(ammoType)
+		end
+		paintText(ammoLeft, "zgAmmoReserve", ScrW() * (7/8) + 20, ScrH() * (7/8) + 30, Color(255,255,255,155), true, true)
+	end
+end
+hook.Add("HUDPaint", "ammoPaint", ammoPaint)
+
+local function shouldDraw( name )
+	if (name == "CHudAmmo") then
+		return false 
+	end
+end
+hook.Add("HUDShouldDraw", "ammoShouldDraw", shouldDraw)

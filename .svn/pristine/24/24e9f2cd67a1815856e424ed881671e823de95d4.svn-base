@@ -1,0 +1,12 @@
+local function initPostEntity()
+	world.initialize()
+end
+hook.Add("InitPostEntity", "worldinit", initPostEntity )
+
+local function worldThink()
+	if world == nil then return end
+	if world.think then
+		world.think()
+	end
+end
+hook.Add("Think", "worldThink", worldThink)

@@ -1,0 +1,70 @@
+classItemData = {}
+
+function classItemData.new( refOwner )
+	
+	local public = {}
+	local owner = refOwner or nil -- this could be the person Who Crafted it/inially found it w.e
+	local name = "defaultItem"	
+	local reusable
+	local model
+	local class 
+
+	function public.setOwner( newOwner )
+		if !IsValid(newOwner) then ErrorNoHalt("itemData: not a valid owner") end
+		owner = newOwner
+	end
+
+	function public.getOwner()
+		return owner
+	end
+
+	function public.setName( newName )
+		name = newName
+	end
+
+	function public.getName()
+		return name
+	end
+
+	function public.setReusable( newReusable )
+		reusable = newReusable
+	end
+
+	function public.getReusable()
+		return reusable
+	end
+
+	function public.setModel( newModel )
+		model = newModel 
+	end
+
+	function public.getModel( )
+		return model
+	end
+
+	function public.setClass( newClass )
+		class = newClass 
+	end
+
+	function public.getClass( )
+		return class
+	end
+
+	function public.drop( user )
+		-- user is the person who is being affected ( not guarenteed to be the person with it in the inventory )
+		-- called Immediately after the Item is removed From the inventory
+	end
+
+	function public.use( user )
+		-- user is the person who is being affected ( not guarenteed to be the person with it in the inventory )
+		-- called Immediately after the Item is removed From the inventory
+	end
+	
+	function public.remove( user )
+		-- user is the person who is being affected ( not guarenteed to be the person with it in the inventory )
+	end
+
+
+	return public
+
+end

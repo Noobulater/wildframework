@@ -1,0 +1,303 @@
+-- Returns the number of elements in the table
+-- This works for tables that have non numerical tables
+function table.count(tbl)
+	local count = 0
+	for k in pairs(tbl) do
+		count = count + 1
+	end
+	return count
+end
+
+-- Returns the number of occurrences or a value
+function table.countValue(tbl, value)
+	local count = 0
+	for k, v in pairs(tbl) do
+		if v == value then
+			count = count + 1 
+		end
+	end
+	return count
+end
+
+-- Returns a shallow copy of the table
+function table.copy(source)
+	local copyTable = {}
+	for key, value in pairs(source) do
+		copyTable[key] = value
+	end
+	return copyTable
+end
+
+-- Returns a deep copy of a table
+function table.deepCopy(source)
+	if type(source) ~= "table" then return source end
+	local mt = getmetatable(source)
+	local copyTable = {}
+	for key, value in pairs(source) do
+		if type(value) == "table" then
+			value = table.deepCopy(value)
+		end
+		copyTable[key] = value
+	end
+	setmetatable(copyTable, mt)
+	return copyTable
+end
+
+-- Returns the keys of a table
+function table.keys(tbl)
+	local keysTable = {}
+	for key, value in pairs(tbl) do
+		keysTable[#keysTable + 1] = key
+	end
+	return keysTable
+end
+
+-- Returns a table with only unique values
+function table.unique(tbl)
+	local uniqueTable = {}
+	local valueTable = {}
+	for key, value in pairs(tbl) do
+		if not valueTable[value] then
+			uniqueTable[key] = value
+			valueTable[value] = true
+		end
+	end
+	return uniqueTable
+end
+
+-- Appends one table into another
+function table.append(tbl, ...)
+	for i = 1, #arg do
+		for key, value in pairs(arg[i]) do
+			if tbl[key] then
+				if type(key) == "number" then
+					tbl[#tbl + 1] = value
+				else
+					if type(value) == "table" then
+						table.append(tbl[key], value)
+					else
+						--print("HEY PROGRAMER, DATA TABLE GOT OVERWRITEN!!! ", key, value)
+						--tbl[key] = value -- Overwrite D:
+					end
+				end
+			else
+				tbl[key] = value
+			end
+		end
+	end
+	return tbl
+end
+
+-- Returns true if the table contains the value
+function table.contains(tbl, value, numerical)
+	if numerical then
+		for i = 1, #tbl do
+			if tbl[i] == value then
+				return true
+			end
+		end
+	else
+		for k, v in pairs(tbl) do
+			if v == value then
+				return true
+			end
+		end
+	end
+	return false
+end
+
+-- Only inserst the value if it is not already on the table
+function table.softInsert(tbl, value, key)
+	if not table.contains(tbl, value) then
+		if key then
+			tbl[key] = value
+		else
+			tbl[#tbl + 1] = value
+		end
+	end
+end
+
+-- Clears the table of all contents
+-- numerical has to be true in order to utilize the optimization.
+function table.clear(tbl, numerical)
+	if numerical then
+		for i = 1, #tbl do
+			tbl[i] = nil
+		end
+	else
+		for k in pairs(tbl) do
+			tbl[k] = nil
+		end
+	end
+end
+
+-- Removes the value from the table
+-- numerical has to be true in order to utilize the optimization.
+function table.removeValue(tbl, value)
+	for k, v in pairs(tbl) do
+		if v == value then
+			tbl[k] = nil
+			return
+		end
+	end
+end
+
+-- Returns a new table that contains the values that passed the predicate
+function table.filter(tbl, predicate, preserveKeys)
+	local returnTable = {}
+	local j = 1
+	for k, v in pairs(tbl) do
+		if predicate(v) then
+			if preserveKeys then
+				returnTable[k] = v
+			else
+				returnTable[j] = v
+				j = j + 1
+			end
+		end
+	end
+	return returnTable
+end
+
+-- Returns a sub table of the input table from the start point tot he end point
+-- if the end point is not specified then it assumes it is to the end of the table.
+-- Only numerical values of a table will be processed.
+function table.sub(tbl, startIndex, endIndex)
+	local returnTable = {}
+	local tblCount = #tbl
+	startIndex = math.clamp(startIndex, 1, tblCount) or 1
+	endIndex = math.clamp(endIndex or tblCount, 1, tblCount)
+	
+	local j = 1
+	for i = startIndex, (endIndex - startIndex + 1) do
+		returnTable[j] = tbl[i]
+		j = j + 1
+	end
+	
+	return returnTable
+end
+
+-- Adds the item to a 2d table
+function table.set2d(tbl, x, y, item)
+	tbl[x] = tbl[x] or {}
+	tbl[x][y] = item
+end
+
+function table.get2d(tbl, x, y)
+	if tbl[x] then
+		return tbl[x][y]
+	end
+end
+
+-- Checks if two tables have the same values at the same keys
+function table.equal(tbl1, tbl2)
+	for k, v in pairs(tbl1) do
+		if tbl2[k] ~= v then
+			return false
+		end	
+	end
+	for k, v in pairs(tbl2) do
+		if tbl1[k] ~= v then
+			return false
+		end	
+	end
+	return true
+end
+
+-- Returns a random value from the table
+-- numerical has to be true in order to utilize the optimization.
+-- Based on how Garry Newman did it
+function table.random(tbl, numerical)
+	if #tbl <= 0 then return end
+
+	if numerical then
+		return tbl[math.random(1, #tbl)]
+	end
+
+	local rndKey = math.random(1, table.count(tbl))
+	local i = 1
+	for k, v in pairs(tbl) do
+		if i == rndKey then return v end
+		i = i + 1
+	end
+end
+
+-- Returns n diffrent random values
+function table.randomN(tbl, n)
+	local keyTable = table.keys(tbl)
+	local returnTable = {}
+	for i = 1, n do
+		local randKey = table.random(keyTable)
+		returnTable[#returnTable + 1] = tbl[randKey]
+		table.removeValue(keyTable, randKey)
+	end
+	return unpack(returnTable)
+end
+
+-- Converts the table into a string, recurisvly
+-- If there are recursive references it will freak the fuck out
+function table.toString(tbl)
+	if type(tbl) == 'table' then
+		local str = '{'
+		local first = true
+		for key, value in pairs(tbl) do
+			if type(key) ~= 'number' then key = '"' .. key .. '"' end
+			if first then
+				str = str .. key .. ' = ' .. table.toString(value)
+				first = false
+			else
+				str = str .. ', ' .. key .. ' = ' .. table.toString(value)
+			end
+		end
+		return str .. '}'
+	else
+		return tostring(tbl)
+	end
+end
+
+function table.toStringExp(tbl)
+	if type(tbl) == 'table' then
+		local str = '{'
+		local first = true
+		for key, value in pairs(tbl) do
+			if type(key) ~= 'number' then key = '"' .. key .. '"' end
+			if first then
+				str =  str .. "\n   " .. key .. ' = ' .. table.toString(value)
+				first = false
+			else
+				str = str .. ',\n   ' .. key .. ' = ' .. table.toString(value)
+			end
+		end
+		return str .. '\n }'
+	else
+		return tostring(tbl)
+	end
+end
+
+function table.toStringSimple(tbl)
+	if type(tbl) == 'table' then
+		local str = '{'
+		local first = true
+		for key, value in pairs(tbl) do
+			if first then
+				str = str .. table.toStringSimple(value)
+				first = false
+			else
+				str = str .. ", " .. table.toStringSimple(value)
+			end
+		end
+		return str .. '}'
+	else
+		return tostring(tbl)
+	end
+end
+
+function table.print(tbl)
+	print(table.toString(tbl))
+end
+function table.prints(tbl)
+	print(table.toStringSimple(tbl))
+end
+function table.printe(tbl)
+	print(table.toStringExp(tbl))
+end

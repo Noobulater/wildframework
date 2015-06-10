@@ -1,0 +1,94 @@
+function characterManagement(parent, key)
+
+	local characterData = LocalPlayer():getData().getCharacter( key )
+
+	local dupe = classFillerPanel.new( parent )
+	dupe:SetSize(parent:GetWide(),parent:GetTall())
+	dupe.Paint = function() 
+		surface.SetDrawColor(0,0,0,155)
+		surface.DrawRect( 0, 0, dupe:GetWide(), dupe:GetTall() )
+	end
+
+	local managePanel = vgui.Create("DPanel", dupe)
+	managePanel:SetSize(dupe:GetWide()/6, dupe:GetTall())
+	managePanel.Paint = function() end
+
+	local backButton = classOptionsTab.new(managePanel)
+	backButton:SetSize(dupe:GetWide()/6 - 20,60)
+	backButton:SetText("Back")
+	backButton:SetPos(10, managePanel:GetTall() * (1/4) - backButton:GetTall()/2)
+	backButton.DoClick = function() parent.open("characterRoster") end
+
+	local fateBank = classOptionsTab.new(managePanel)
+	fateBank:SetSize(dupe:GetWide()/6 - 20,60)
+	fateBank:SetText("Open Fate Bank")
+	fateBank:SetPos(10, managePanel:GetTall() * (2/4) - fateBank:GetTall()/2)
+	fateBank.DoClick = function() parent.open("fateBank", key) end
+
+	local useCharacter = classOptionsTab.new(managePanel)
+	useCharacter:SetSize(dupe:GetWide()/6 - 20,60)
+	useCharacter:SetText("Use Character")
+	useCharacter:SetPos(10, managePanel:GetTall() * (3/4) - useCharacter:GetTall()/2)
+	useCharacter.DoClick = function() RunConsoleCommand("selectCharacter", key) end
+
+	dupe.addItem(managePanel)
+
+	---------------------
+	local characterPanel = vgui.Create("DPanel", dupe)
+	characterPanel:SetSize(dupe:GetWide()/3, dupe:GetTall())
+	function characterPanel:Paint() 
+					if LocalPlayer():getCharacterIndex() == key then 
+						surface.SetDrawColor(0, 255, 0, 155) 
+						surface.DrawOutlinedRect( 2, 2, characterPanel:GetWide() - 4, characterPanel:GetTall() - 4)
+					end 
+
+				end
+
+	guiPaintCharacter(characterData, characterPanel)
+	dupe.addItem(characterPanel)
+
+	---------------------
+
+	local permissions = {"Examine", "Deposit"}
+	if key == LocalPlayer():getCharacterIndex() then
+		permissions = nil
+	end
+
+	local inventoryData = characterData.getInventory()
+
+	local inventoryPanel = vgui.Create("DPanel", dupe)
+	inventoryPanel:SetSize(dupe:GetWide()/3, dupe:GetTall())
+	inventoryPanel.Paint = function() end
+
+	local eqPanel = vgui.Create("DPanel", inventoryPanel)
+	eqPanel:SetSize(225, 240)
+	eqPanel:SetPos(inventoryPanel:GetWide()/2 - eqPanel:GetWide()/2,0)
+	eqPanel.Paint = function() end
+
+	guiPaintEquipment(inventoryData, eqPanel, permissions)
+
+	local itemsPanel = vgui.Create("DPanel", inventoryPanel)
+	itemsPanel:SetSize(inventoryPanel:GetWide(), inventoryPanel:GetTall() - 240)
+	itemsPanel:SetPos(0,240)
+	itemsPanel.Paint = function() end
+
+	guiPaintInventory(inventoryData, itemsPanel, permissions)
+
+	dupe.addItem(inventoryPanel)
+
+	-----------------------
+	-- local managePanel = vgui.Create("DPanel", dupe)
+	-- managePanel:SetSize(dupe:GetWide()/6, dupe:GetTall())
+	-- --managePanel.Paint = function() ends
+
+
+	-- local managePanelButton = classOptionsTab.new(managePanel)
+	-- managePanelButton:SetSize(dupe:GetWide()/6,100)
+	-- managePanelButton:SetText("Open Fate Bank")
+	-- managePanelButton:SetPos(0, managePanel:GetTall() / 2 - managePanelButton:GetTall()/2)
+
+	-- dupe.addItem(managePanel)
+
+	return dupe
+end
+classMainMenu.SCREENS["characterManagement"] = characterManagement

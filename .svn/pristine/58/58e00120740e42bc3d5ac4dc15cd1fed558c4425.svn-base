@@ -1,0 +1,123 @@
+local cameraAngle = Angle( 65, 0, 0)
+local cameraDistance = 500
+local cameraPos = Vector( 0, 0, 0 )
+
+function withinBox( min, max, comparePos)
+	if min.x < comparePos.x && min.y < comparePos.y && max.x > comparePos.x && max.y > comparePos.y then
+		return true
+	end
+end
+
+local devFirstPerson = false
+gui.EnableScreenClicker(!devFirstPerson)
+
+function GM:CalcView( ply, pos, ang, fov )
+	
+	local distance
+	local vDistance
+	local min, max
+	local propHeight
+
+	for _, ent in pairs( ents.FindByClass("prop_*") ) do
+		ent:SetRenderMode(RENDERMODE_TRANSALPHA)
+		prepareEntAlpha(ent)	
+	end
+
+	if devFirstPerson then
+		local view = {}
+	    view.origin = pos
+	    view.angles = ang
+	    view.fov = fov
+
+	    return view
+	end
+	
+	cameraPos = pos + cameraAngle:Forward() * -1 * cameraDistance
+
+	local view = {}
+	view.origin = cameraPos
+	view.angles = cameraAngle
+	view.fov = fov
+
+    return view
+
+end
+concommand.Add("tfps", function() gui.EnableScreenClicker(devFirstPerson) devFirstPerson = !devFirstPerson end)
+
+function GM:ShouldDrawLocalPlayer() 
+	return !devFirstPerson
+end
+
+function GM:CreateMove( cmd )
+
+	if devFirstPerson then return end
+
+	local x, y = gui.MousePos( )
+	local aimPos = gui.ScreenToVector(x,y)--LPCameraScreenToVector(gui.MouseX(), gui.MouseY(), ScrW(), ScrH(), LocalPlayer():GetAngles(), 7)
+	--print(aimPos)
+
+	local traceData = {}
+	traceData.start = cameraPos
+	traceData.endpos = cameraPos + aimPos * 100000
+	traceData.filter = ents.FindByClass("prop_physics")
+
+	local trace = util.TraceLine(traceData)
+
+	local shootPos = LocalPlayer():GetShootPos()
+	local viewAngle = (trace.HitPos - shootPos):Angle()
+
+	if trace.Entity != nil && trace.Entity:IsNPC() then
+		local bone = trace.Entity:LookupBone("ValveBiped.Bip01_Spine2")
+		local pos = trace.Entity:GetBonePosition( bone )
+
+		viewAngle = ( pos - shootPos):Angle()
+	end
+
+	viewAngle.p = math.floor(viewAngle.p)
+	viewAngle.y = math.floor(viewAngle.y)
+	viewAngle.r = math.floor(viewAngle.r)
+
+	cmd:SetViewAngles(viewAngle)
+
+end
+
+-- local healthkit
+-- function GM:HUDPaint()
+-- 	if !IsValid(healthkit) then
+-- 		healthkit = ents.CreateClientProp()
+-- 	end
+-- 	healthkit:SetModel("models/healthvial.mdl")
+-- 	healthkit:Spawn()
+
+-- 	local x, y = gui.MousePos( )
+-- 	local aimPos = gui.ScreenToVector(x,y)
+-- 	--print(aimPos)
+
+-- 	local traceData = {}
+-- 	traceData.start = cameraPos
+-- 	traceData.endpos = cameraPos + aimPos * 100000
+
+-- 	local trace = util.TraceLine(traceData)
+
+-- 	healthkit:SetPos(trace.HitPos)
+
+-- 	local shootPos = LocalPlayer():GetShootPos()
+
+-- 	local viewAngle = (trace.HitPos - shootPos):Angle()
+
+-- 	viewAngle.p = math.floor(viewAngle.p)
+-- 	viewAngle.y = math.floor(viewAngle.y)
+-- 	viewAngle.r = math.floor(viewAngle.r)
+
+-- end
+
+function GM:GUIMousePressed(input)
+	if GAMEMODE.ShowScoreboard then return end
+	if input == MOUSE_LEFT then LocalPlayer():ConCommand("+attack") end
+	if input == MOUSE_RIGHT then LocalPlayer():ConCommand("+attack2") end
+end
+function GM:GUIMouseReleased(input)
+	if GAMEMODE.ShowScoreboard then return end
+	if input == MOUSE_LEFT then LocalPlayer():ConCommand("-attack") end
+	if input == MOUSE_RIGHT then LocalPlayer():ConCommand("-attack2") end
+end

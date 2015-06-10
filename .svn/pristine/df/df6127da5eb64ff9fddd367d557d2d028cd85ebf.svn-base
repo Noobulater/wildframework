@@ -1,0 +1,26 @@
+playerData = {}
+
+function playerData.new()
+	local public = {}
+
+	local playerStats = classStats.new() -- creates the player stat table
+	local playerInventory = nil -- to come
+
+	function public.setStats(newStatTable)
+		playerStats = newStatTable
+	end
+
+	function public.getStats() 
+		return playerStats
+	end
+
+	function public.setInventory( newInventory )
+		playerInventory = newInventory
+	end
+
+	function public.getInventory() 
+		return playerInventory
+	end
+
+	return public 
+end

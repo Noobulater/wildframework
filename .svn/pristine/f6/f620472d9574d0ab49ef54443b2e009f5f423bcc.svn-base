@@ -1,0 +1,14 @@
+classAIDirector = {}
+
+classAIDirector.generics = {}
+function classAIDirector.addGeneric(key, func)
+	classAIDirector.generics[key] = func
+end
+
+function classAIDirector.spawnGeneric( key, pos, ang )
+	if classAIDirector.generics[key] != nil then
+		return classAIDirector.generics[key]( pos, ang )
+	else	
+		ErrorNoHalt( "Attempted to Spawn : " .. key )
+	end
+end

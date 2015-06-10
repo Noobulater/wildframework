@@ -1,0 +1,43 @@
+local PMETA = FindMetaTable("Player")
+
+local function initPost()
+	if CLIENT then
+		LocalPlayer():setupData()
+	end
+end
+hook.Add("InitPostEntity", "dataInit", initPost)
+
+function PMETA:setupData()
+	self.characterData = classCharacterData.new( self )
+	self.fateManager = classFate.new( self )
+	if SERVER then
+		self.fateManager.setFate(300)
+
+		self:selectCharacter(0)
+		self:getInventory().addItem(classItemData.genItem("medkit"))
+		self:getInventory().addItem(classItemData.genItem("weapon_ar2"))
+		self:getInventory().addItem(classItemData.genItem("weapon_smg1"))
+		self:getInventory().addItem(classItemData.genItem("weapon_pistol"))
+		self:getInventory().addItem(classItemData.genItem("weapon_crowbar"))
+		self:getInventory().addItem(classItemData.genItem("weapon_stunstick"))
+		self:getInventory().addItem(classItemData.genItem("weapon_357"))
+		self:getInventory().addItem(classItemData.genItem("killa-soda-beat"))
+
+	end
+end
+
+function PMETA:getFate()
+	return self.fateManager
+end
+
+function PMETA:getData()
+	return self.characterData
+end
+
+function PMETA:getStats()
+	return self:getCharacter().getStats()
+end
+
+function PMETA:getInventory()
+	return self:getCharacter().getInventory()
+end

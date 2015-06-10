@@ -1,0 +1,181 @@
+
+function util.randRadius(origin, min, max)
+	max = max or min
+	distance = math.random(min, max)
+	angle = math.random(0, 360)
+	return origin + Vector(math.cos(angle) * distance, math.sin(angle) * distance, 0)
+end
+
+function util.ModelGender(modelName)
+	if string.find(model, "male")
+	or string.find(model, "barney")
+	or string.find(model, "kleiner")
+	or string.find(model, "monk")
+	or string.find(model, "breen")
+	or string.find(model, "eli")
+	or string.find(model, "gman")
+	or string.find(model, "odessa") then
+		return 1 -- Male
+	elseif string.find(model, "female")
+	or string.find(model, "alyx")
+	or string.find(model, "mossman") then
+		return 2 -- Female
+	end
+	return 3 -- Unknown
+end
+
+function util.TraceDecal(traceInfo, decalName)
+	util.Decal(decalName, traceInfo.HitPos + traceInfo.HitNormal, traceInfo.HitPos - traceInfo.HitNormal)
+	-- local size = math.random() * 2
+	-- util.DecalEx(decalName, traceInfo.Entity, traceInfo.HitPos + traceInfo.HitNormal, traceInfo.HitPos - traceInfo.HitNormal, size, size)
+end
+
+function util.TraceEffect(traceInfo, effectName)
+	local scale = 1
+	local effectdata = EffectData()
+	effectdata:SetStart(traceInfo.StartPos)
+	effectdata:SetOrigin(traceInfo.HitPos)
+	effectdata:SetNormal(traceInfo.HitNormal)
+	--effectdata:SetRadius(scale)
+	--effectdata:SetMagnitude(scale)
+	--effectdata:SetScale(scale)
+	--effectdata:SetAngles(traceInfo.HitNormal:Angle())
+	effectdata:SetSurfaceProp(32)
+	effectdata:SetMaterialIndex(traceInfo.MatType)
+
+	effectdata:SetEntity(traceInfo.Entity)
+
+	util.Effect(effectName, effectdata)
+end
+
+function util.TraceParticle(traceInfo, effectName)
+	local hitAngle = traceInfo.HitNormal:Angle()
+	hitAngle.p = hitAngle.p + 90
+	local attachEnt = nil
+	if IsValid(traceInfo.Entity) and not traceInfo.Entity:IsWorld() then
+		attachEnt = traceInfo.Entity
+	end
+	ParticleEffect(effectName, traceInfo.HitPos, hitAngle, attachEnt)
+end
+
+local effects = {
+	"AR2Explosion",
+	"AR2Impact",
+	"BoltImpact", -- Spawns a non-glowing, non-moving bolt
+	--"bloodspray",
+	"BloodImpact", -- Purple Blood Effect, linear
+	"cball_bounce", -- When the combine ball collides with a surface. Sparkles + surface effect.
+	"cball_explode", -- Small Flash and lots of sparkles.
+	"EjectBrass_9mm", -- Ejects a 9mm brass gib. dissapears after a while. makes sounds on collision.
+	"EjectBrass_12Gauge", -- Ejects a shotgun brass gib. dssapears after a while. makes sounds on collision.
+	"Explosion", -- Explosion and sound.
+	"GlassImpact", -- White dust, small flying gibs of glass.
+	"gunshotsplash", -- Water splash like when you shoot in the water + sound
+	"HelicopterMegaBomb", -- Fire explosion.
+	"ManhackSparks", -- A fountain of sparks
+	"RifleShellEject", -- Ejects a long brass gib. dssapears after a while. makes sounds on collision.
+	"StunstickImpact", -- White flash on surface, some sparks.
+	"SMOKE", -- Makes a stream of smoke. continuous.
+	"ShellEject", -- Ejects a big brass gib. dissapears fast. makes sounds on collision.
+	"ShotgunShellEject", -- Ejects a shotgun brass gib. dissapears fast. makes sounds on collision.
+	"Sparks", -- Creates sparks, similar to the ones when metal scrapes ground.
+	"WaterSurfaceExplosion", -- Makes the water splash, a water surface, and an explosion sound
+	"watersplash", -- Similar as to when someone walks in water
+	"WheelDust", -- The dust a wheel makes when it rolls.
+}
+
+local particles = {
+	--ep2
+	"grenade_explosion_01",
+	"GrubBlood",
+	"WaterLeak_Pipe_1",
+	"warp_shield_impact",
+	"Waterfall_Cascade_01",
+	"Rocket_Smoke",
+	"Weapon_Combine_Ion_Cannon",
+	"Weapon_Combine_Ion_Cannon_Intake",
+	"Weapon_Combine_Ion_Cannon_i",
+	"explosion_turret_break",
+	"explosion_turret_fizzle",
+	"slime_drip_slow",
+	"blood_drip_slow",
+	"vortigaunt_beam",
+	"steam_jet_50",
+	"hunter_shield_impact",
+	"Explosion_2",
+	"electrical_arc_01",
+	"door_explosion_chunks",
+	"door_explosion_core",
+	"door_explosion_flash",
+	"door_explosion_shockwave",
+	"door_explosion_smoke",
+	"door_pound_core",
+	"weapon_muzzle_flash_assaultrifle",
+	"weapon_muzzle_flash_smoke_small2",
+	"weapon_muzzle_smoke",
+	"weapon_muzzle_smoke_long",
+	"choreo_launch_rocket_jet",
+	"choreo_skyflower_01",
+	"choreo_borealis_snow",
+	"blood_frozen",
+	"extract_vorteat_juice",
+	"frozen_steam",
+	"muzzleflash_frozen",
+	"larvae_glow",
+	"strider_tubedrip_01",
+	"strider_impale_ground",
+	"strider_small_spray",
+	"strider_hit_ground",
+	"strider_headbeating_01",
+	"strider_goop_01",
+	"strider_cough_01",
+	"strider_cannon_impact",
+	"strider_brain_geyser_01",
+	"smoke_smoulder_01",
+	"smoke_mesh_01",
+	"smoke_dog_v_strider_dropship",
+	"smoke_dark_plume_1",
+	"building_explosion",
+	"aurora_shockwave",
+	"aurora_shockwave_ring",
+	"antlion_spit",
+	"antlion_gib_02",
+	"blood_zombie_split",
+	"blood_zombie_split_spray",
+	"blood_zombie_split_spray_tiny",
+	"blood_zombie_split_spray_tiny2",
+	"blood_impact_red_01",
+	--portal
+	"broken_tube_suck",
+	"fire_large_02",
+	--source sdk
+	"impact_antlion",
+	"impact_concrete",
+	"impact_metal",
+	"impact_computer",
+	"impact_grass",
+	"impact_dirt",
+	"impact_wood",
+	"impact_glass",
+	"impact_ricochet",
+	"impact_generic_burn",
+	"impact_generic_burst",
+	"impact_generic_burst_2",
+	"water_splash_01",
+	"water_splash_02",
+	"water_splash_03",
+	"slime_splash_01",
+	"slime_splash_02",
+	"slime_splash_03",
+	"combineball",
+	"vortigaunt_hand_glow",
+	"water_trail_medium",
+	"water_trail_medium_b",
+	--css
+	"muzzle_autorifles",
+	"muzzle_machinegun",
+	"muzzle_pistols",
+	"muzzle_rifles",
+	"muzzle_shotguns",
+	"muzzle_smgs",
+}

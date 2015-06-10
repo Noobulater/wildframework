@@ -1,0 +1,40 @@
+function renderThink()
+	if world.data == nil then world.initialize() print("worldData doesn't exist") return end
+	local entries = world.data.getEntries() 
+
+	-- Define locals, makes it cheapr
+	local mdl
+	local pos
+	local ang
+	local distance
+	for id, entry in pairs(entries) do
+		mdl = entry.getModel()
+		pos = entry.getPos()
+		ang = entry.getAngles()
+
+		distance = LocalPlayer():GetPos():Distance(pos)
+
+		if distance < 1000 then
+			if !IsValid(entry.getEnt()) then
+				entry.createEnt( )
+			else
+				if distance < 300 && (entry.cd == nil || entry.cd <= CurTime()) then 
+					timer.Simple((LocalPlayer():Ping() * 2.5)/1000, function() entry.getEnt():SetNoDraw(true) end) 
+					RunConsoleCommand("solidify", id)
+					entry.cd = CurTime() + 3
+				end
+				entry.getEnt():SetPos(pos)
+				entry.getEnt():SetAngles(ang)
+				entry.getEnt():SetNoDraw(false)
+				local alpha = math.Clamp(math.Round(255 * (distance/300)), 80, 255)
+				entry.getEnt():SetColor( Color( 255, 255, 255, alpha))	
+			end
+		else
+			if IsValid(entry.getEnt()) then
+				entry.removeEnt()
+			end
+		end
+	end
+end
+hook.Add("Think", "renderHook", renderThink)
+

@@ -1,0 +1,8 @@
+"wild"
+{
+	"base"		"base"
+	"title"		"wild"
+	"maps"        "wild_"
+	"menusystem"	"1"
+}
+

@@ -1,0 +1,17 @@
+
+if SERVER then
+	local function initalentites()
+		for i = 1, 100 do
+			local ent = classRenderEntry.new()
+
+			local x = math.randomf(-1000, 1000)
+			local y = math.randomf(-1000, 1000)
+
+			ent.setPos(Vector(x, y, 0))
+			ent.setAngles(Angle(0, math.randomf(0, 360), 0))
+			ent.setModel("models/props_foliage/tree_cliff_01a.mdl")
+
+		end
+	end
+	hook.Add("InitPostEntity", "virus_postent_dyanmicmap", initalentites)
+end

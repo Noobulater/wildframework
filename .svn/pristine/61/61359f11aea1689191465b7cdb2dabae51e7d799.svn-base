@@ -1,0 +1,91 @@
+-- This is were a lot of settings are.
+-- Feel free to change them.
+-- Read the comments carefully, you might break something.
+
+-- Gamemode Settings
+GM.Name 		= "wild"
+GM.Version		= 0.01
+GM.Author 		= "Shell Shocked Gaming"
+GM.Email 		= "AmanBentley@gmail.com"
+GM.Website 		= "shellshockedgaming.com"
+
+-- Server Settings
+GM.ChatEnabled	= true		-- Can people talk in chat? (Does not apply to admins)
+GM.VoiceEnabled	= true		-- Can people talk on voice? (Does not apply to admins)
+GM.AllTalk		= true 		-- Everyone can hear each other. (Does not apply to admins)
+GM.TalkDistance	= 1000		-- Only valid if all talk is off. (Does not apply to admins)
+
+-- Game Settings
+GM.MaxCharacters = 1 		-- One character can be used. Doesnt matter for DAYZ mod
+
+-- Player Settings
+GM.Flashlight	= false 	-- Can people use the flashlight (Does not apply to admins)
+GM.WalkSpeed	= 250		-- Player's walking speed. (Just moving normaly)
+GM.RunSpeed		= 350		-- Player's running speed. (Holding shift)
+GM.FallDamage	= 20		-- The amount of fall damage people will take. Setting to 0 would turn it off.
+GM.FootSteps	= true		-- Do people make sounds while they walk.
+GM.MaxHealth	= 100 		-- Health people have.
+GM.InvWidth		= 6			-- The width of the player's inventory. (The base inventory)
+GM.InvHeight	= 8 		-- The height of the player's inventory. (The base inventory)
+
+-- GUI
+GM.MenuButton	= KEY_TAB	-- Button used to open the menu.
+GM.StickyMenu	= false 	-- Toggle the menu, instead of press and hold.
+GM.Rounded		= 4			-- The size of the rounded corners on panels.
+GM.MaxGUIWidth	= 500		-- The max width of the character menu.
+GM.MaxGUIHeight	= 400		-- The max height of the character menu.
+GM.GUIPadding	= 60		-- The min padding around the character menu.
+GM.Padding		= 0			-- The amount of padding between slots.
+GM.PaddingOuter	= 4			-- The amount of padding on the outside of the character menu.
+GM.FadeInDelta	= 0.45		-- The delta by which menus fade in.
+
+-- Colors
+GM.White		= Color(242, 242, 242, 255)
+GM.Cream		= Color(245, 255, 154, 255)
+GM.Gray			= Color(97, 95, 90, 255)
+GM.DarkGray		= Color(43, 42, 39, 255)
+GM.DarkerGray	= Color(33, 32, 29, 255)
+GM.DarkestGray	= Color(23, 22, 19, 255)
+GM.ShadowGray	= Color(23, 22, 19, 255)
+GM.BevelGray	= Color(57, 55, 50, 255)
+GM.Red			= Color(97, 55, 50, 255)
+
+
+
+GM.PlayerModels = {
+-- Citizen
+	"models/player/group01/male_01.mdl",
+	"models/player/group01/male_02.mdl",
+	"models/player/group01/male_03.mdl",
+	"models/player/group01/male_04.mdl",
+	"models/player/group01/male_05.mdl",
+	"models/player/group01/male_06.mdl",
+	"models/player/group01/male_07.mdl",
+	"models/player/group01/male_08.mdl",
+	"models/player/group01/male_09.mdl",
+	"models/player/group01/female_01.mdl",
+	"models/player/group01/female_02.mdl",
+	"models/player/group01/female_03.mdl",
+	"models/player/group01/female_04.mdl",
+	"models/player/group01/female_06.mdl",
+	"models/player/group01/female_07.mdl",
+-- Rebel
+	-- "models/player/group03/male_01.mdl",
+	-- "models/player/group03/male_02.mdl",
+	-- "models/player/group03/male_03.mdl",
+	-- "models/player/group03/male_04.mdl",
+	-- "models/player/group03/male_05.mdl",
+	-- "models/player/group03/male_06.mdl",
+	-- "models/player/group03/male_07.mdl",
+	-- "models/player/group03/male_08.mdl",
+	-- "models/player/group03/male_09.mdl",
+	-- "models/player/group03/female_01.mdl",
+	-- "models/player/group03/female_02.mdl",
+	-- "models/player/group03/female_03.mdl",
+	-- "models/player/group03/female_04.mdl",
+	-- "models/player/group03/female_06.mdl",
+	-- "models/player/group03/female_07.mdl",
+}
+
+
+

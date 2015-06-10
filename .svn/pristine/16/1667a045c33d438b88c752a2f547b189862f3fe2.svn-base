@@ -1,0 +1,11 @@
+--require("glon")
+AddCSLuaFile("sh_resource.lua")
+include("sh_resource.lua")
+
+include("shared.lua")
+AddCSLuaFile("shared.lua")
+
+include("sh_config.lua")
+AddCSLuaFile("sh_config.lua")
+
+

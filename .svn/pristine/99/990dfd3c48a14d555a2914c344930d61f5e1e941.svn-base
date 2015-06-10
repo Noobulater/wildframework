@@ -1,0 +1,63 @@
+renderDistance = 1000
+
+local resultTable = {}
+
+local function addEntities( branch )
+	for key, entryData in pairs( branch.getData() ) do
+		table.insert(resultTable, entryData.getUniqueID())
+	end
+end
+-- I was so lazy I just did this manually
+local lazyTable = {}
+-- each direction is a table entry here
+
+lazyTable[1] = {x = 4,y = 2,d = 3}
+lazyTable[2] = {x = 3,y = 1,d = 4}
+lazyTable[3] = {x = 2,y = 4,d = 1}
+lazyTable[4] = {x = 1,y = 3,d = 2}
+
+local function includeEntries( pos, renderTree ) 
+	local comparePos = renderTree.getPos()
+	local branches = renderTree.getBranches()
+
+	local residingBranch = determineDirection(pos, comparePos)
+
+	local distx = math.abs(comparePos.x - pos.x)
+	local disty = math.abs(comparePos.y - pos.y)
+
+	if branches[residingBranch].isCluster() then
+		addEntities( branches[residingBranch] )
+	else
+		includeEntries( pos, branches[residingBranch])
+	end
+
+	if distx < renderDistance && disty < renderDistance then
+		if branches[lazyTable[residingBranch].d].isCluster() then
+			addEntities( branches[lazyTable[residingBranch].d] )
+		else
+			includeEntries( pos, branches[lazyTable[residingBranch].d])
+		end
+	end
+	if distx < renderDistance then
+		if branches[lazyTable[residingBranch].y].isCluster() then
+			addEntities( branches[lazyTable[residingBranch].y] )
+		else
+			includeEntries( pos, branches[lazyTable[residingBranch].y])
+		end
+	end
+	if disty < renderDistance then
+		if branches[lazyTable[residingBranch].x].isCluster() then
+			addEntities( branches[lazyTable[residingBranch].x] )
+		else
+			includeEntries( pos, branches[lazyTable[residingBranch].x])
+		end
+	end
+end
+
+function includeEntriesNear( pos )
+	resultTable = {}
+
+	includeEntries( pos, world.data.getOptimum() )
+
+	return resultTable -- this is a list of uniqueIDs
+end

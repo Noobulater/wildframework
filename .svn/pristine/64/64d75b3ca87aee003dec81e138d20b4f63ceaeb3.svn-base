@@ -1,0 +1,3 @@
+function GM:GetGameDescription() 
+	return GAMEMODE.Name .. " " .. GAMEMODE.Version
+end

@@ -1,0 +1,7 @@
+
+function util.randRadius(origin, min, max)
+	max = max or min
+	distance = math.random(min, max)
+	angle = math.random(0, 360)
+	return origin + Vector(math.cos(angle) * distance, math.sin(angle) * distance, 0)
+end

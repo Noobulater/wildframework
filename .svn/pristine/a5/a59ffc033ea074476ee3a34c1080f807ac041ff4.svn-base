@@ -1,0 +1,61 @@
+local class = "shotgun"
+
+local function generate()
+	local weapon = classWeaponData.new()
+	weapon.setClass(class)
+	weapon.setName("Custom Blasta")
+	weapon.setDescription("This is an example of a custom weapon")
+	weapon.setFireSound("weapons/shotgun/shotgun_fire6.wav")	
+	weapon.setFireRate( .3 )
+	weapon.setDamage(10)
+	weapon.setAccuracy(.1)
+	weapon.setClipSize(6)
+	weapon.setNumBullets(8)
+	weapon.setHoldType("shotgun")
+	weapon.setAmmoType("shotgunAmmo") -- I'm doing a hacky way, I set it to the classname of the item it uses as ammo. It is used by custom hud 
+	weapon.setModel("models/weapons/w_shotgun.mdl")
+
+	function weapon.reload( user , swep )
+		local pool = {}
+
+		for slot, item in pairs(user:getInventory().getItems()) do
+			if item != 0 && item.getClass() == weapon.getAmmoType() then
+				pool[slot] = item
+			end
+		end
+		
+		local removePool = weapon.getClipSize() - swep:Clip1()
+
+		for slot, item in pairs(pool) do
+			if removePool > 0 then
+				local ammo = tonumber(item.getExtras()) or 0
+				if removePool >= ammo then
+					swep:SetClip1(swep:Clip1() + ammo)
+					removePool = removePool - ammo
+					if SERVER then
+						user:getInventory().removeItem(slot)
+					end
+				else
+					local ammoLeft = ammo - removePool
+					swep:SetClip1(swep:Clip1() + removePool)					
+					item.setExtras(tostring(ammoLeft))
+					removePool = 0
+					break
+				end
+			end
+		end
+	end
+
+
+	weapon.callBack = function( ply, tr, dmgInfo )  
+		local visual = EffectData()
+		visual:SetOrigin( tr.HitPos )
+		util.Effect("AR2Impact", visual )
+	end
+
+	return weapon
+end
+
+classItemData.register( class, generate )
+
+-- EXAMPLE OF A CUSTOM WEAPON

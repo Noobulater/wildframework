@@ -1,0 +1,230 @@
+classInventory = {}
+classInventory.defaultSlots = 9
+
+if SERVER then 
+	util.AddNetworkString( "networkItemSlot" )
+	util.AddNetworkString( "networkSwapSlots" )
+
+	function networkSwapSlots( slotTo, slotFrom, ply )
+		ply = ply or player.GetAll()
+
+		local class = "0"
+
+		if itemData != 0 then class = itemData.getClass() end
+
+		net.Start( "networkSwapSlots" )
+			net.WriteInt( slotTo, 6 )
+			net.WriteInt( slotFrom, 6 )	
+		net.Send( ply )	
+	end
+
+	function networkItemSlot( slot, itemData, ply )
+		ply = ply or player.GetAll()
+
+		local class = "0"
+
+		if itemData != 0 then class = itemData.getClass() end
+
+		net.Start( "networkItemSlot" )
+			net.WriteInt( slot, 6 )
+			net.WriteString( class, 6 )			
+		net.Send( ply )	
+	end
+end
+if CLIENT then
+	net.Receive( "networkSwapSlots", function(len)   
+		local itemSlotTo = net.ReadInt( 6 )
+		local itemSlotFrom = net.ReadInt( 6 )
+
+		LocalPlayer():getInventory().swapSlots( itemSlotTo, itemSlotFrom )	
+	end)
+
+	net.Receive( "networkItemSlot", function(len)   
+		local itemSlot = net.ReadInt( 6 )
+		local item = net.ReadString( )	
+
+		if item != "0" then
+			item = classItemData.genItem( item )
+		else
+			item = 0
+		end
+
+		if item != nil then 
+			LocalPlayer():getInventory().setSlot( itemSlot, item )		
+		else
+			ErrorNoHalt("item Incorrectly networked")
+		end
+	end)
+end
+
+function classInventory.new( refOwner )
+
+	local public = {}
+
+	local inventory = {}
+	local owner = refOwner or nil -- this is a backwards reference to the owner, could be player, prop or npc
+
+	function public.setOwner( newOwner )
+		if !IsValid(newOwner) then ErrorNoHalt("inventory: not a valid owner") end
+		owner = newOwner
+	end
+
+	function public.getOwner()
+		return owner
+	end
+
+	function public.getSlot( slot )
+		return inventory[slot]
+	end
+
+	function public.setSlot( slot, itemData )
+		inventory[slot] = itemData or 0
+		if SERVER && owner:IsPlayer() then
+			networkItemSlot( slot, itemData, owner )
+		end
+	end
+
+	function public.removeSlot( slot )
+		local itemData = public.getSlot(slot)
+		if itemData != nil then
+			if !public.addItem( itemData ) then
+				itemData.drop( owner )
+			end
+		end
+		table.remove( inventory, slot )
+	end
+
+	function public.addSlot( slot )
+		inventory[table.Count(inventory)] = 0
+	end
+
+	function public.swapSlots( slotTo, slotFrom)
+		local swapItem = public.getSlot( slotFrom )
+		local item = public.getSlot( slotTo )
+		public.setSlot( slotTo, swapItem )
+		public.setSlot( slotFrom, item )
+		if slotTo < 0 && item != 0 && item.isWeapon() then
+			item.unEquip( owner )
+		end
+		if slotFrom < 0 && swapItem != 0 && swapItem.isWeapon() then
+			swapItem.unEquip( owner )
+		end		
+	end
+
+	function public.hasRoom()
+		for slot, itemData in pairs( inventory ) do
+			if slot >= 0 && itemData == 0 then
+				return slot
+			end
+		end
+		return nil
+	end
+
+	function public.getItems()
+		return inventory
+	end
+
+	function public.findItem( itemData )
+		for key, item in pairs(inventory) do
+			if item == itemData then
+				return key
+			end
+		end
+		print("Inventory: itemData was not found")
+		return nil
+	end
+
+	function public.addItem( addItemData )
+		local openSlot = public.hasRoom()
+
+		if !openSlot then
+			print("inventoryFull")
+			return false
+		end
+
+		public.setSlot( openSlot, addItemData )	
+
+		return true
+	end
+
+	function public.removeItem( removeSlot, removeItemData )
+		if removeSlot then
+			removeItemData = public.getSlot( removeSlot )
+			if removeItemData != 0 then
+				public.setSlot( removeSlot, 0 )				
+				return true
+			end
+		else
+			for slot, itemData in pairs( inventory ) do
+				if removeItemData != 0 && itemData == removeItemData then
+					public.setSlot( slot, 0 )
+					return true
+				end
+			end
+		end
+		return false
+	end
+
+	function public.useItem( useSlot, useItemData )
+		if useSlot then
+			useItemData = public.getSlot( useSlot )
+			if useItemData != 0 then
+				if !useItemData.getReusable() then
+					public.setSlot( useSlot, 0 )	
+				end			
+				useItemData.use( owner )
+				return true
+			end
+		else
+			for slot, itemData in pairs( inventory ) do
+				if useItemData != 0 && public.getSlot( slot ) == useItemData then
+					if !useItemData.getReusable() then
+						public.setSlot( slot, 0 )	
+					end	
+					useItemData.use( owner )
+					return true
+				end
+			end
+		end
+
+		return false
+	end
+
+	function public.dropItem( dropSlot, dropItemData )
+		if dropSlot then
+			dropItemData = public.getSlot( dropSlot )
+			if dropItemData != 0 then
+				public.setSlot( dropSlot, 0 )	
+				dropItemData.drop( owner )
+				return true
+			end
+		else
+			for slot, itemData in pairs( inventory ) do
+				if dropItemData != 0 &&  public.getSlot( slot ) == dropItemData then
+					public.setSlot( slot, 0 )	
+					dropItemData.drop( owner )
+					return true
+				end
+			end
+		end
+
+		return false
+	end
+
+	for i = 1, classInventory.defaultSlots do
+		public.addSlot()
+	end
+	-- these are the equipment slots
+	public.setSlot(-1, 0)
+	public.setSlot(-2, 0)
+	public.setSlot(-3, 0)
+
+	return public
+
+end
+if SERVER then
+
+concommand.Add("useItem", function( ply, cmd, args ) ply:getInventory().useItem( math.Round(args[1] or 0) ) end )
+concommand.Add("dropItem", function( ply, cmd, args ) ply:getInventory().dropItem( math.Round(args[1] or 0) ) end )
+
+end

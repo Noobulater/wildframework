@@ -1,0 +1,138 @@
+ENT.Base = "base_ai" 
+ENT.Type = "ai"
+ 
+ENT.PrintName		= ""
+ENT.Author			= ""
+ENT.Contact			= ""  //fill in these if you want it to be in the spawn menu
+ENT.Purpose			= ""
+ENT.Instructions	= ""
+ 
+ENT.AutomaticFrameAdvance = true
+Enemies = {"player","barricade"}
+ 
+Vo = {}
+Vo.Zombie_D = {"npc/zombie/zombie_die1.wav",
+"npc/zombie/zombie_die2.wav",
+"npc/zombie/zombie_die3.wav",
+"npc/zombie/zombie_voice_idle6.wav",
+"npc/zombie/zombie_voice_idle11.wav"}
+
+Vo.Zombie_P = {"npc/zombie/zombie_pain1.wav",
+"npc/zombie/zombie_pain2.wav",
+"npc/zombie/zombie_pain3.wav",
+"npc/zombie/zombie_pain4.wav",
+"npc/zombie/zombie_pain5.wav",
+"npc/zombie/zombie_pain6.wav"}
+
+Vo.Zombie_T = {"npc/zombie/zombie_voice_idle1.wav",
+"npc/zombie/zombie_voice_idle2.wav",
+"npc/zombie/zombie_voice_idle3.wav",
+"npc/zombie/zombie_voice_idle4.wav",
+"npc/zombie/zombie_voice_idle5.wav",
+"npc/zombie/zombie_voice_idle7.wav",
+"npc/zombie/zombie_voice_idle8.wav",
+"npc/zombie/zombie_voice_idle9.wav",
+"npc/zombie/zombie_voice_idle10.wav",
+"npc/zombie/zombie_voice_idle12.wav",
+"npc/zombie/zombie_voice_idle13.wav",
+"npc/zombie/zombie_voice_idle14.wav"}
+
+Vo.Poison_D = {"npc/zombie_poison/pz_die1.wav",
+"npc/zombie_poison/pz_die2.wav",
+"npc/zombie_poison/pz_idle2.wav",
+"npc/zombie_poison/pz_warn2.wav"}
+
+Vo.Poison_P = {"npc/zombie_poison/pz_idle3.wav",
+"npc/zombie_poison/pz_idle4.wav",
+"npc/zombie_poison/pz_pain1.wav",
+"npc/zombie_poison/pz_pain2.wav",
+"npc/zombie_poison/pz_pain3.wav",
+"npc/zombie_poison/pz_warn1.wav"}
+
+Vo.Poison_T = {"npc/zombie_poison/pz_alert1.wav",
+"npc/zombie_poison/pz_alert2.wav",
+"npc/zombie_poison/pz_call1.wav",
+"npc/zombie_poison/pz_throw2.wav",
+"npc/zombie_poison/pz_throw3.wav"}
+
+Vo.Fast_D = {"npc/fast_zombie/fz_alert_close1.wav",
+"npc/fast_zombie/fz_alert_far1.wav"}
+
+Vo.Fast_P = {"npc/fast_zombie/wake1.wav",
+"npc/headcrab_poison/ph_poisonbite2.wav",
+"npc/headcrab_poison/ph_hiss1.wav",
+"npc/headcrab_poison/ph_idle1.wav"}
+
+Vo.Fast_T = {"npc/fast_zombie/fz_frenzy1.wav",
+"npc/fast_zombie/fz_frenzy1.wav",
+"npc/barnacle/barnacle_bark1.wav",
+"npc/barnacle/barnacle_pull1.wav"}
+
+Vo.Claw = {"npc/zombie/claw_strike1.wav",
+"npc/zombie/claw_strike2.wav",
+"npc/zombie/claw_strike3.wav"}
+
+ 
+/*---------------------------------------------------------
+   Name: OnRemove
+   Desc: Called just before entity is deleted
+---------------------------------------------------------*/
+
+function ENT:Ragdoll(dmg)
+	if CLIENT then return false; end
+	if GAMEMODE.Int_Ragdolls <= 6 then
+		GAMEMODE.Int_Ragdolls = GAMEMODE.Int_Ragdolls + 1
+		local ragdoll = ents.Create("prop_ragdoll")
+		ragdoll:SetModel(self:GetModel())
+		ragdoll:SetPos(self:GetPos())
+		ragdoll:SetAngles(self:GetAngles());
+		if self.Frozen then
+			ragdoll:SetMaterial("models/shiny")
+			ragdoll:EmitSound("physics/glass/glass_sheet_break1.wav",100,100)
+		end
+		ragdoll:Spawn()
+		ragdoll:Activate()
+		ragdoll:SetGravity(0)
+		ragdoll:SetCollisionGroup( 1 )
+		ragdoll:GetPhysicsObject():ApplyForceCenter(dmg:GetDamageForce() * dmg:GetDamage());
+			--Polkm: This will work better then the old one
+			local Steps = 30
+			local TimePerStep = 0.05
+			local CurentAlpha = 255
+			for i = 1, Steps do
+				timer.Simple(i * TimePerStep, function()
+					CurentAlpha = CurentAlpha - (255 / Steps)
+					ragdoll:SetColor(255, 255, 255, CurentAlpha)
+				end)
+			end
+		timer.Simple(Steps * TimePerStep, function() GAMEMODE.Int_Ragdolls = GAMEMODE.Int_Ragdolls - 1 ragdoll:Remove() end)
+	end
+end
+ 
+/*---------------------------------------------------------
+   Name: PhysicsCollide
+   Desc: Called when physics collides. The table contains 
+			data on the collision
+---------------------------------------------------------*/
+function ENT:PhysicsCollide( data, physobj )
+end
+ 
+ 
+/*---------------------------------------------------------
+   Name: PhysicsUpdate
+   Desc: Called to update the physics .. or something.
+---------------------------------------------------------*/
+function ENT:PhysicsUpdate( physobj )
+end
+ 
+/*---------------------------------------------------------
+   Name: SetAutomaticFrameAdvance
+   Desc: If you're not using animation you should turn this 
+	off - it will save lots of bandwidth.
+---------------------------------------------------------*/
+function ENT:SetAutomaticFrameAdvance( bUsingAnim )
+ 
+	self.AutomaticFrameAdvance = bUsingAnim
+ 
+end
+ 

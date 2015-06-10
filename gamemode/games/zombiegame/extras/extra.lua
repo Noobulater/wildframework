@@ -1,0 +1,93 @@
+if SERVER then
+	function util.getPlayersOrigin(playerTable)
+		local max, min
+
+		for key, ply in pairs(playerTable or {}) do
+			if max != nil then
+				if ply:GetPos().x > max.x then
+					max.x = ply:GetPos().x
+				end
+				if ply:GetPos().y > max.y then
+					max.y = ply:GetPos().y
+				end
+				if ply:GetPos().z > max.z then
+					max.z = ply:GetPos().z
+				end	
+			else
+				max = ply:GetPos()
+			end
+			if min != nil then	
+				if ply:GetPos().x < min.x then
+					min.x = ply:GetPos().x
+				end
+				if ply:GetPos().y < min.y then
+					min.y = ply:GetPos().y
+				end
+				if ply:GetPos().z < min.z then
+					min.z = ply:GetPos().z
+				end			
+			else
+				min = ply:GetPos()
+			end						
+		end
+		if max != nil && min != nil then
+
+			local xPos = max.x - (max.x - min.x)/2
+			local yPos = max.y - (max.y - min.y)/2
+			local zPos = max.z - (max.z - min.z)/2
+
+			local returnVect = Vector(xPos,yPos,zPos)
+
+			return returnVect
+		else
+			return Vector(0,0,0)
+		end
+	end
+
+	function util.countAliveZombies()
+		local count = 0
+		for index, ent in pairs(ents.FindByClass("diggerTrap")) do
+			count = count + 1 + ent:getDiggers()
+		end
+		count = count + table.Count(ents.FindByClass("snpc_*"))
+		return count
+	end
+
+	local function swap( ply, cmd, args )
+		local inventory = ply:getInventory()
+
+		if inventory != nil then return end
+
+		local result = inventory.getSlot(-1)
+
+		local wep = user:GetActiveWeapon()
+		if !IsValid(wep) or wep:GetClass() != "weapon_loader" then print("Weapon: Player doesn't have weapon loader") return false end
+
+		if wep:GetWeapon() == result then	
+
+		end
+	end
+	--concommand.Add("swapWeapons", swap)
+
+	function cadeEntityTakeDamage( ent, dmginfo )
+		if IsValid(ent) then
+			if ent.isCade then
+				if dmginfo:GetAttacker():GetClass() == "player" then dmginfo:SetDamage(0) end
+				if dmginfo:GetAttacker():GetClass() == "env_explosion" && dmginfo:GetAttacker().Owner:IsPlayer() then dmginfo:SetDamage(0) end
+				ent:SetHealth(ent:Health() - dmginfo:GetDamage())
+				if ent:Health() <= 0 then
+					ent:SetCollisionGroup(COLLISION_GROUP_DEBRIS)
+					ent.isCade = false
+					ent:GetPhysicsObject():EnableMotion(true)
+					ent:GetPhysicsObject():Wake()
+					if ent:GetPhysicsObject():IsDragEnabled() then
+						ent:GetPhysicsObject():SetDragCoefficient(0.4)
+					end
+					ent:GetPhysicsObject():ApplyForceCenter(dmginfo:GetDamageForce())
+				end
+			end
+		end
+	end
+	hook.Add("EntityTakeDamage", "cadeEntityTakeDamage", cadeEntityTakeDamage)
+
+end

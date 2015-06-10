@@ -1,0 +1,58 @@
+classDifficulty = {}
+
+classDifficulty.difficulties = {}
+
+function classDifficulty.getDifficulties()
+	return classDifficulty.difficulties
+end
+
+function classDifficulty.register( class , genFunction )
+	classDifficulty.difficulties[class] = genFunction
+end
+
+function classDifficulty.genDifficulty( class )
+	if classDifficulty.difficulties[class] then
+		return classDifficulty.difficulties[class]()
+	else
+		return nil
+	end
+end
+
+function classDifficulty.new()
+
+	local public = {}
+
+	local zombies = {} 
+
+	local thinkSpeed = 1 -- thinks every 1 seconds
+	local name = "NODIFFICULTY"
+	
+	function public.setName( newName )
+		name = newName
+	end
+
+	function public.getName()
+		return name
+	end
+
+	function public.evaluatePlayers() -- haven't figured out how to use this yet
+		local totalScore = 0
+
+		return totalScore
+	end
+
+	function public.setThinkSpeed( newThinkSpeed )
+		thinkSpeed = newThinkSpeed
+	end
+
+	function public.getThinkSpeed( )
+		return thinkSpeed
+	end	
+
+	function public.think()
+		
+	end
+
+	return public
+
+end

@@ -1,0 +1,218 @@
+classWeaponData = {}
+
+if SERVER then
+	util.AddNetworkString( "updateActiveWeapon" )
+	function updateActiveWeapon( slot, ply )
+		ply = ply or player.GetAll()
+
+		net.Start( "updateActiveWeapon" )
+			net.WriteInt( slot, 6 )
+		net.Send( ply )	
+	end
+
+end
+
+if CLIENT then
+	net.Receive( "updateActiveWeapon", function(len)   
+		local weaponSlot = net.ReadInt( 6 )
+
+		local wep = LocalPlayer():GetActiveWeapon()
+		if !IsValid(wep) or wep:GetClass() != "weapon_loader" then ErrorNoHalt("Weapon: Player doesn't have weapon loader") return false end
+
+		local weapon = LocalPlayer():getInventory().getSlot(weaponSlot)
+		timer.Simple(.05, function() wep:SetWeapon(weapon) end)
+	end)
+
+end
+
+function classWeaponData.new( refOwner )
+	
+	local public = classItemData.new( refOwner )
+
+	public.setReusable(true)
+
+	local custom = true
+	local wClass = "weapon_loader" -- ONLY SET THIS IF YOU AREN'T USING A CUSTOM WEAPON
+
+--- All the variables, The methods are at the bottem becasue there is afuckton of them.
+	local fireSound
+	local ammoType
+	local altAmmoType
+	local holdType 
+	local fireRate
+	local damage
+	local accuracy
+	local clipSize 
+	local reloadTime
+
+-------------------------------------------------------------------------
+-------------------------------------------------------------------------
+
+	function public.equip( user )
+		if SERVER then
+			user:Give(wClass)
+
+			local result = user:getInventory().findItem( public )
+
+			user:getInventory().swapSlots( -1, result )
+
+			user:SelectWeapon(wClass)
+
+			if !custom then	return false end 
+
+			local wep = user:GetActiveWeapon()
+			if !IsValid(wep) or wep:GetClass() != "weapon_loader" then ErrorNoHalt("Weapon: Player doesn't have weapon loader") return false end
+
+			wep:SetWeapon(public)	
+
+			updateActiveWeapon(-1, user)			
+		end
+	end
+	
+	function public.unEquip( user )
+		if SERVER then
+			user:StripWeapon(wClass)
+
+			if !custom then	return false end 
+
+			local wep = user:GetActiveWeapon()
+
+			if !IsValid(wep) or wep:GetClass() != "weapon_loader" then ErrorNoHalt("Weapon: Player doesn't have weapon loader") return false end
+
+			wep:SetWeapon(nil)
+
+			--local result = user:getInventory().findItem( public )
+			--updateActiveWeapon(result, user)			
+		end
+	end
+
+	function public.equipped( user )
+		local result = user:getInventory().findItem( public )
+		if result == nil then return false end
+		if result < 0 then
+			return true
+		end
+		return false
+	end
+
+	function public.use( user )
+		if !public.equipped( user ) then
+			public.equip( user )
+		else
+			public.unEquip( user )
+		end
+	end
+
+	function public.reload( user , swep )
+		local pool = user:GetAmmoCount( (ammoType or "pistol") )
+		
+		local removePool = 0
+
+		if pool >= clipSize then
+			removePool = clipSize or 10
+			swep:SetClip1( clipSize )
+		else
+			removePool = math.Clamp(clipSize - swep:Clip1(), 0, pool)
+			swep:SetClip1( swep:Clip1() + removePool)
+		end
+		user:SetAmmo( pool - removePool , (ammoType or "pistol") )
+	end
+
+-------------------------------------------------------------------------
+-------------------------------------------------------------------------
+
+	function public.setFireSound( newFireSound )
+		fireSound = Sound(newFireSound) or newFireSound
+	end
+
+	function public.getFireSound( )
+		return fireSound
+	end
+
+	function public.setCustom( newCustom )
+		custom = newCustom
+	end
+
+	function public.getCustom( )
+		return custom
+	end
+
+	function public.setWClass( newWClass )
+		wClass = newWClass
+	end
+
+	function public.getWClass( )
+		return wClass
+	end
+
+	function public.setAmmoType( newAmmoType )
+		ammoType = newAmmoType 
+	end
+
+	function public.getAmmoType( )
+		return ammoType
+	end
+
+	function public.setAltAmmoType( newAltAmmoType )
+		altAmmoType = newAltAmmoType 
+	end
+
+	function public.getAltAmmoType( )
+		return altAmmoType
+	end
+
+	function public.setHoldType( newHoldType )
+		holdType = newHoldType 
+	end
+
+	function public.getHoldType( )
+		return holdType
+	end
+
+	function public.setFireRate( newFireRate )
+		fireRate = newFireRate 
+	end
+
+	function public.getFireRate( )
+		return fireRate
+	end
+
+	function public.setDamage( newDamage )
+		damage = newDamage 
+	end
+
+	function public.getDamage( )
+		return damage
+	end
+
+	function public.setAccuracy( newAccuracy )
+		accuracy = newAccuracy 
+	end
+
+	function public.getAccuracy( )
+		return accuracy
+	end
+
+	function public.setClipSize( newClipSize )
+		clipSize = newClipSize 
+	end
+
+	function public.getClipSize( )
+		return clipSize
+	end
+
+	function public.setReloadTime( newReloadTime )
+		reloadTime = newReloadTime 
+	end
+
+	function public.getReloadTime( )
+		return reloadTime
+	end
+
+	function public.isWeapon()
+		return true
+	end
+
+	return public
+
+end

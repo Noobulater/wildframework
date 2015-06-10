@@ -1,0 +1,79 @@
+local PANEL = {}
+
+function PANEL:Init()
+	self.slot = 0
+	self.player = nil
+
+	if self.Icon != nil then
+		self.Icon:Remove()
+	end
+	self.Icon = vgui.Create( "ModelImage", self )
+	self.Icon:SetMouseInputEnabled( false )
+	self.Icon:SetKeyboardInputEnabled( false )	
+	self.Icon:SetSize(self:GetWide(), self:GetTall())	
+
+	self.button = vgui.Create( "DButton", self)
+	self.button:SetSize(iconSize, iconSize)
+	self.button:SetText("")
+	self.button.Paint = function() end
+	self.button.DoClick = function() 
+		self:GetPlayer():getInventory().getSlot(self:GetSlot()).use( LocalPlayer() ) RunConsoleCommand("useItem", self:GetSlot()) 
+	end	
+	self.button.DoRightClick = function() 
+		self:GetPlayer():getInventory().getSlot(self:GetSlot()).drop( LocalPlayer() ) RunConsoleCommand("dropItem", self:GetSlot()) 
+	end			
+end
+
+function PANEL:SetPlayer(newPlayer)
+	self.player = newPlayer
+end
+
+function PANEL:GetPlayer()
+	return self.player or LocalPlayer()
+end
+
+function PANEL:SetSlot( newSlot )
+	local ply = self:GetPlayer()
+	if !IsValid(ply) then ErrorNoHalt("CL_ITEMICON: player doesnt exist") return end
+	self.slot = newSlot
+end
+
+function PANEL:GetSlot()
+	return self.slot
+end
+
+function PANEL:SetItem(  )
+	--if itemData == nil then self.Icon:SetVisible(false) end
+	
+end
+
+function PANEL:GetItem()
+	return self.itemData
+end
+
+function PANEL:Paint( w, h )
+    draw.RoundedBox( 4, 0, 0, w, h, Color( 0,0,0,255 ) )
+    local itemData = self:GetPlayer():getInventory().getSlot( self:GetSlot() ) or 0 
+    local size = h
+    if w < h then
+    	size = w
+    end
+
+    self.Icon:SetSize( size, size )    
+    self.button:SetSize( size, size )
+    self.Icon:SetPos(w/2 - size/2 ,h/2 - size/2)
+    self.button:SetPos(w/2 - size/2 ,h/2 - size/2)
+
+    if itemData != 0 then
+    	self.Icon:SetVisible(true)
+    	self.Icon:SetModel(itemData.getModel(), 0) -- model, skin, bodygroup
+    	self.button:SetMouseInputEnabled( true )
+		self.button:SetKeyboardInputEnabled( true )	
+	else
+		self.Icon:SetVisible(false)
+		self.button:SetMouseInputEnabled( false )
+		self.button:SetKeyboardInputEnabled( false )
+    end
+end
+
+vgui.Register( "itemIcon", PANEL, "Panel" )

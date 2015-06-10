@@ -1,0 +1,55 @@
+classTime = {}
+
+function classTime.new()
+	local public = {}
+
+	local currentTime = 0
+	local dayLength = 260 -- Time scales [seconds]
+	local delay = 1.0 -- thinks once per second
+	local nextThink = 0 -- nextTime to think at
+	local paused = false -- stops thinking
+
+	function public.setCurrentTime(newTime)
+		if newTime < 1 then 
+			currentTime = dayLength * newTime
+		else
+			currentTime = math.Clamp(newTime, 0, dayLength)
+		end
+	end
+
+	function public.getCurrentTime()
+		return currentTime
+	end
+
+	function public.setDayLength(newLength)
+		dayLength = newLength
+	end
+
+	function public.getDayLength()
+		return dayLength
+	end
+
+	function public.getDayProgress()
+		return ((CurTime() / dayLength) % 1) -- currentTime / dayLength
+	end
+
+	function public.think()
+		if paused then return end
+		-- if nextThink <= CurTime() then
+		-- 	--- Put all the shit u want time to do in here.
+		-- 	local timeOfDay = public.getCurrentTime() -- the time of day it is now
+		-- 	local newTime = timeOfDay + 1 -- advances the time by 1
+
+		-- 	if newTime >= dayLength then
+		-- 		newTime = newTime - dayLength -- will reset on the last hour of the day ( for example 11:59 PM => 12:00 AM <-- 12:00 AM is the Zero Value)
+		-- 	end
+		-- 	public.setCurrentTime(newTime)
+
+		-- 	--print("currentTime"..currentTime)
+
+		-- 	nextThink = CurTime() + delay
+		-- end
+	end
+
+	return public
+end

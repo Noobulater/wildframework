@@ -1,0 +1,27 @@
+if SERVER then
+	util.AddNetworkString("util_decalex")
+
+	function util.DecalEx(decalName, entity, pos, normal, w, h)
+		net.Start("util_decalex")
+		net.WriteString(decalName)
+		net.WriteEntity(entity)
+		net.WriteVector(pos)
+		net.WriteVector(normal)
+		net.WriteFloat(w)
+		net.WriteFloat(h)
+		net.Broadcast()
+	end
+
+end
+
+if CLIENT then
+	net.Receive("util_decalex", function()
+		local decalName = util.DecalMaterial(net.ReadString())
+		local entity = net.ReadEntity()
+		local pos = net.ReadVector()
+		local normal = net.ReadVector()
+		local w = net.ReadFloat()
+		local h = net.ReadFloat()
+		util.DecalEx(Material(decalName), entity, pos, normal, w, h)
+	end)
+end

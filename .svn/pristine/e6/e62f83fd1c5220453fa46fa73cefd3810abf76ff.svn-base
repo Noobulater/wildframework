@@ -1,0 +1,46 @@
+local PANEL = {}
+
+function PANEL:Init()
+	self.history = {}
+	self.vScroll = 0
+end
+
+function PANEL:AddLine( newPanel )
+	newPanel:SetParent(self)
+	self.history[table.Count(self.history)] = newPanel
+end
+
+function PANEL:GetLine(index)
+	return self.history[index]
+end
+
+function PANEL:RecentLine(index)
+	return self.history[table.Count(self.history)]
+end
+
+function PANEL:setVScroll( newVScroll )
+	self.vScroll = newVScroll
+end
+
+function PANEL:getVScroll()
+	return self.vScroll
+end
+
+function PANEL:PaintOver()
+	local numEntries = table.Count(self.history)
+	local xPos, yPos = 0, 0
+	for i = 0, numEntries do
+		local panel = self.history[i]
+		if !IsValid(panel) then
+			table.remove(self.history, i)
+			break
+		end
+		panel:SetPos(xPos,yPos - self:getVScroll())
+		yPos = yPos + panel:GetTall()
+	end
+	if yPos > self:GetTall() then
+		self:setVScroll(yPos - self:GetTall())
+	end	
+end
+
+vgui.Register( "chatHistory", PANEL, "Panel" )

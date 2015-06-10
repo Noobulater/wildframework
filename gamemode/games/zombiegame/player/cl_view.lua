@@ -1,0 +1,127 @@
+if !GM.useTopDown then
+
+--local cameraAngle = Angle( 65, 0, 0)
+local cameraDistance = 70
+local cameraPos = Vector( 0, 0, 0 )
+local cameraAng = Angle( 0, 0, 0 )
+
+gui.EnableScreenClicker(false)
+
+local mPitch = GetConVar( "m_pitch" )
+local mYaw = GetConVar( "m_yaw" )
+
+local lastAng = Angle(0,0,0)
+local lastPos 
+local lookAtPos = Vector(0,0,0)
+
+function GM:CalcView( ply, pos, ang, fov )
+	if LocalPlayer():GetObserverMode() != OBS_MODE_NONE then return end
+
+	trace = util.TraceLine( {
+		start = ply:EyePos(),
+		endpos = ply:EyePos() - cameraAng:Forward() * cameraDistance + cameraAng:Right() * 25 + cameraAng:Up() ,
+		filter = ply,
+		mask = MASK_SOLID_BRUSHONLY,
+	} )
+			
+	cameraPos = trace.HitPos + trace.HitNormal*2
+
+	local view = {}
+	view.origin = cameraPos 
+	view.angles = cameraAng
+	view.fov = fov
+
+	if IsValid(LocalPlayer():GetActiveWeapon()) then
+		if LocalPlayer():GetActiveWeapon().CalcView != nil then
+			view = LocalPlayer():GetActiveWeapon():CalcView( ply, cameraPos, cameraAng, fov )
+		end
+	end
+
+    return view
+
+end
+
+function GM:ShouldDrawLocalPlayer() 
+	return (LocalPlayer():GetObserverMode() == OBS_MODE_NONE)
+end
+
+local nextThink = 0
+local vecMove = Vector()
+
+function GM:CreateMove( cmd )
+	if LocalPlayer():GetObserverMode() != OBS_MODE_NONE then return end
+
+	local ply = LocalPlayer()
+	if !cameraAngle then
+		cameraAng = Angle(0,0,0)
+	end
+	cameraAng = lastAng + Angle( cmd:GetMouseY() * (mPitch:GetFloat()), cmd:GetMouseX() * (-mYaw:GetFloat()), 0 )
+	cameraAng.p = math.Clamp( math.NormalizeAngle( cameraAng.p ), -89, 89 )
+
+	local traceData = {}
+	traceData.start = cameraPos
+	traceData.endpos = cameraPos + lastAng:Forward() * 1000000
+	traceData.filter = ply 
+	if !GAMEMODE.FriendlyFire then traceData.filter = player.GetAll() end
+	traceData.mask = MASK_SHOT
+
+	local trace = util.TraceLine(traceData)
+
+	local hitPos = trace.HitPos
+
+	local viewAngle = (hitPos - ply:EyePos()):Angle()
+	viewAngle.p = math.Clamp( math.NormalizeAngle( viewAngle.p ), -89, 89 )  --math.floor(viewAngle.p)
+
+	lastAng = cameraAng
+
+	-- --- THIS CORRECTS MOVEMENT SO YOU ALWAYS MOVE IN THE DIRECTION YOUR CAMERA IS FACING
+
+	local forwardSpeed = cmd:GetForwardMove()
+	local sideSpeed = cmd:GetSideMove()
+
+	local a = LocalPlayer():EyePos()
+	local b = hitPos
+	local c = cameraPos 
+
+	-- u need to this in order to have player move in the same general local direction
+	-- or else the 3d plane makes the angles get smaller when the aim pos is close
+	a.z = c.z
+	b.z = c.z
+
+	local sideAB = (b-a):GetNormal()
+	local sideCB = (c-b):GetNormal()
+
+	local abc = math.acos(sideAB:Dot(sideCB))
+	local angleA = math.rad(180) - abc
+	local angleB = math.rad(180) - (math.rad(90) + angleA) 
+
+	local vforwardAng = math.cos(angleA)
+	local vsideAng = math.cos(angleB)
+	local yLength = forwardSpeed
+
+	local vFinalForward = (vforwardAng * yLength)
+	local vFinalSide = (-vsideAng * yLength)
+
+	local hforwardAng = math.cos(angleB)
+	local hsideAng = math.cos(angleA)
+	local xLength = sideSpeed
+
+	local hFinalForward = (hforwardAng * xLength)
+	local hFinalSide = (hsideAng * xLength)
+
+	cmd:SetForwardMove(vFinalForward + hFinalForward)
+	cmd:SetSideMove(vFinalSide + hFinalSide)
+
+	cmd:SetViewAngles(viewAngle)
+
+end
+
+
+local function shouldDraw( name )
+	if (name == "CHudCrosshair") then
+		return true 
+	end
+end
+hook.Add("HUDShouldDraw", "dShouldDraw", shouldDraw)cameraAng = viewAngle
+
+end

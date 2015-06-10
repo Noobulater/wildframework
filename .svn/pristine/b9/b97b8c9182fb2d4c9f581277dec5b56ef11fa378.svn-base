@@ -1,0 +1,153 @@
+
+-- This assembles all the objects into a nice simple table for the engine to use
+local renderTable = {}
+local renderDistance = 1000
+
+local function addEntities( branch )
+	for key, entryData in pairs( branch.getData() ) do
+		table.insert(renderTable, entryData)
+	end
+end
+-- I was so lazy I just did this manually
+local lazyTable = {}
+-- each direction is a table entry here
+
+lazyTable[1] = {x = 4,y = 2,d = 3}
+lazyTable[2] = {x = 3,y = 1,d = 4}
+lazyTable[3] = {x = 2,y = 4,d = 1}
+lazyTable[4] = {x = 1,y = 3,d = 2}
+
+local function includeEntries( pos, renderTree ) 
+	local comparePos = renderTree.getPos()
+	local branches = renderTree.getBranches()
+
+	local residingBranch = determineDirection(pos, comparePos)
+
+	local distx = math.abs(comparePos.x - pos.x)
+	local disty = math.abs(comparePos.y - pos.y)
+
+	if branches[residingBranch].isCluster() then
+		addEntities( branches[residingBranch] )
+	else
+		includeEntries( pos, branches[residingBranch])
+	end
+
+	if distx < renderDistance && disty < renderDistance then
+		if branches[lazyTable[residingBranch].d].isCluster() then
+			addEntities( branches[lazyTable[residingBranch].d] )
+		else
+			includeEntries( pos, branches[lazyTable[residingBranch].d])
+		end
+	end
+	if distx < renderDistance then
+		if branches[lazyTable[residingBranch].y].isCluster() then
+			addEntities( branches[lazyTable[residingBranch].y] )
+		else
+			includeEntries( pos, branches[lazyTable[residingBranch].y])
+		end
+	end
+	if disty < renderDistance then
+		if branches[lazyTable[residingBranch].x].isCluster() then
+			addEntities( branches[lazyTable[residingBranch].x] )
+		else
+			includeEntries( pos, branches[lazyTable[residingBranch].x])
+		end
+	end
+end
+
+function prepareRenderTable()
+	local pos = LocalPlayer():GetPos()
+
+	local optimum = world.data.getOptimum()
+	renderTable = {}
+
+	includeEntries(pos, optimum)
+	timer.Simple(1,function() prepareRenderTable() end)
+end
+	timer.Simple(1,function() prepareRenderTable() end)
+concommand.Add("testRenderTable", function() PrintTable(renderTable) end)
+
+local function drawEntry( entry )
+
+	local mdl = entry.getModel()
+	local pos = entry.getPos()
+	local ang = entry.getAngles()
+	local solidDist = entry.getSolidDistance() or 300
+
+	local distance = LocalPlayer():GetPos():Distance(pos)
+
+	entry.getEnt():SetPos(pos)
+	entry.getEnt():SetAngles(ang)
+	entry.getEnt():SetNoDraw(false)
+	if entry.getClass() != "prop_physics" && distance < solidDist then
+		entry.getEnt():SetNoDraw(true)
+	else
+		prepareEntAlpha(entry.getEnt())			
+	end	
+end
+
+function prepareEntAlpha( ent )
+	local distance = LocalPlayer():GetPos():Distance(ent:GetPos())
+
+	-- VDistance is used to determine if a prop is tall enough to alpha
+
+	local vDistance = ent:GetPos().z - LocalPlayer():GetPos().z 
+	local min, max = ent:GetCollisionBounds()
+	local propHeight = max.z - min.z
+
+	local alpha = 255	
+
+	if vDistance > -80 then	
+		if vDistance > 80 then	
+			if withinBox(ent:LocalToWorld(min), ent:LocalToWorld(max), LocalPlayer():GetPos()) then
+				alpha = 40
+			end		
+		else
+			if propHeight > 80 then
+				alpha = math.Clamp(math.Round(255 * (distance/300)), 80, 255)
+			end
+		end			
+	end
+
+	ent:SetColor( Color( 255, 255, 255, alpha))
+end
+
+function renderThink()
+	if world.data == nil then world.initialize() print("worldData doesn't exist") return end
+	renderDistance = 1000 + LocalPlayer():GetPos().z
+	local entries = renderTable or world.data.getEntries() 
+
+	-- Define locals, makes it cheapr
+	local pos
+	local ang
+	local distance
+
+	local solidDist = 300
+
+	for id, entry in pairs(entries) do
+		pos = entry.getPos()
+		ang = entry.getAngles()
+		solidDist = entry.getSolidDistance() or solidDist
+
+		distance = LocalPlayer():GetPos():Distance(pos)
+
+		if distance < renderDistance then
+			if !IsValid(entry.getEnt()) then
+				entry.createEnt( )
+			else								
+				if distance < solidDist && (entry.cd == nil || entry.cd <= CurTime()) then 
+					--timer.Simple((LocalPlayer():Ping() * 2.5)/1000, function() entry.getEnt():SetNoDraw(true) end) 
+					RunConsoleCommand("solidify", entry.getUniqueID() ) 
+					entry.cd = CurTime() + 3
+				end
+				drawEntry( entry, distance )
+			end
+		else
+			if IsValid(entry.getEnt()) then
+				entry.removeEnt()
+			end
+		end
+	end
+end
+hook.Add("Think", "renderHook", renderThink)
+

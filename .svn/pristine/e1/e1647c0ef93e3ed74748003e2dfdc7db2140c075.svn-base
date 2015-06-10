@@ -1,0 +1,76 @@
+local frame
+
+local function create() -- stands for open Character 
+
+	if frame != nil then
+		frame:Remove()
+	end
+
+	frame = vgui.Create("DFrame")
+	frame:SetSize(250, 100)
+	frame:SetTitle("Character Creation")
+	frame:MakePopup()
+	frame:Center()
+	frame.Paint = function()
+		surface.SetDrawColor( 55, 55, 55, 155)
+		surface.DrawRect( 0, 0, frame:GetWide(), frame:GetTall())
+	end
+
+	-- local model = table.Random(mdls)
+	-- print(model)
+
+	-- local mdl = vgui.Create("DModelPanel", frame)
+	-- local parent = mdl:GetParent()
+	-- mdl:SetPos(40,40)
+	-- mdl:SetSize(parent:GetWide() - 80, parent:GetWide() - 80)
+	-- mdl:SetModel(model)
+
+	local name = vgui.Create("DTextEntry", frame)
+	local parent = name:GetParent()
+	name:SetSize( parent:GetWide() * 0.9, 25 )
+	name:SetPos( parent:GetWide()/2 - name:GetWide()/2, 30)
+	name:SetText("Enter Character Name")
+
+	local finalize = vgui.Create("DButton", frame)
+	local parent = finalize:GetParent()
+	finalize:SetSize( parent:GetWide() * 0.9, 25 )
+	finalize:SetPos( parent:GetWide()/2 - finalize:GetWide()/2, parent:GetTall() - 35)
+	finalize:SetText("Generate Character")
+	finalize.DoClick = function() createCharacter(LocalPlayer(), name:GetText()) RunConsoleCommand("createCharacter", name:GetText()) frame:Remove() end
+	-- for key, data in pairs(mdls) do
+		
+	-- end
+end
+concommand.Add("openCharacterCreation", create)
+
+surface.CreateFont( "weCharacterName", {
+ font = "HUDNumber5",
+ size = 16,
+ weight = 500,
+ blursize = 0,
+ scanlines = 0,
+ antialias = true,
+ underline = false,
+ italic = false,
+ strikeout = false,
+ symbol = false,
+ rotary = false,
+ shadow = false,
+ additive = false,
+ outline = true
+} )
+
+function guiPaintCharacter( characterData, parent )
+	if characterData == nil then print("cl_CharacterGUI.lua : Character Doesn't Exist") return false end
+
+	local mdl = vgui.Create("DModelPanel", parent)
+	mdl:SetPos(40,40)
+	mdl:SetSize(parent:GetWide() - 80, parent:GetWide() - 80)
+	mdl:SetModel(characterData.getModel())
+
+	local name = vgui.Create("DLabel", parent)
+	name:SetFont("weCharacterName")	
+	name:SetText(characterData.getName())
+	name:SizeToContents()
+	name:SetPos( parent:GetWide()/2 - name:GetWide()/2, 25)
+end

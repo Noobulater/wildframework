@@ -1,0 +1,41 @@
+classCharacterList = {}
+
+function classCharacterList.new( refOwner )
+
+	local public = {}
+	local characterList = {}
+	local owner = refOwner or nil -- this is a backwards reference to the owner, could be player, prop or npc
+	local selectedCharacter = 0
+
+	function public.setOwner( newOwner )
+		if !IsValid(newOwner) then ErrorNoHalt("characterList: not a valid owner") end
+		owner = newOwner
+	end
+
+	function public.getOwner()
+		return owner
+	end
+
+	function public.createCharacter( slot )
+		characterList[ slot ] = classCharacterData.new( owner )
+	end
+
+	function public.deleteCharacter( charNum )
+		table.remove(characterList, charNum)
+	end
+
+	function public.selectCharacter( newSelectedCharacter )
+		selectedCharacter = newSelectedCharacter
+	end
+
+	function public.getCharacterIndex()
+		return selectedCharacter
+	end
+
+	function public.getCharacter()
+		return characterList[selectedCharacter]
+	end
+
+	return public 
+
+end

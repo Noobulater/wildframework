@@ -1,0 +1,70 @@
+local cameraAngle = Angle( 65, 0, 0)
+local cameraDistance = 500
+local cameraPos = Vector( 0, 0, 0 )
+
+function GM:CalcView( ply, pos, ang, fov )
+	local distance = LocalPlayer():GetPos():Distance(pos)
+	for _, ent in pairs( ents.FindByClass("prop_*") ) do
+		ent:SetRenderMode(RENDERMODE_TRANSALPHA)
+		distance = LocalPlayer():GetPos():Distance(ent:GetPos())
+		local alpha = math.Clamp(math.Round(255 * (distance/300)), 80, 255)		
+		ent:SetColor( Color( 255, 255, 255, alpha))
+	end
+	cameraPos = pos + cameraAngle:Forward() * -1 * cameraDistance
+
+    local view = {}
+    view.origin = cameraPos
+    view.angles = cameraAngle
+    view.fov = fov
+ 
+    return view
+
+end
+
+function GM:ShouldDrawLocalPlayer() 
+	return true
+end
+
+
+-- function LPCameraScreenToVector( iScreenX, iScreenY, iScreenW, iScreenH, angCamRot, fFoV )
+--     --This code works by basically treating the camera like a frustrum of a pyramid.
+--     --We slice this frustrum at a distance "d" from the camera, where the slice will be a rectangle whose width equals the "4:3" width corresponding to the given screen height.
+--     local d = 4 * iScreenH / ( 6 * math.tan( 0.5 * fFoV ) )	
+ 
+--     --Forward, right, and up vectors (need these to convert from local to world coordinates
+--     local vForward = angCamRot:Forward()
+--     local vRight   = angCamRot:Right()
+--     local vUp      = angCamRot:Up()
+ 
+--     --Then convert vec to proper world coordinates and return it 
+--     return ( d * vForward + ( iScreenX - 0.5 * iScreenW ) * vRight + ( 0.5 * iScreenH - iScreenY ) * vUp ):GetNormal()
+-- end
+
+function GM:CreateMove( cmd )
+	-- local x, y = gui.MousePos( )
+
+	-- local traceData = {}
+	-- traceData.start = cameraPos
+	-- traceData.endpos = LPCameraScreenToVector(x, y, ScrW(), ScrH(), cameraAngle, 75) * 100
+
+	-- local trace = util.TraceLine(traceData)
+
+	-- local aimPos = trace.HitPos
+	-- print(aimPos)
+
+	-- local shootPos = LocalPlayer():GetShootPos()
+	-- local viewAngle = (aimPos - shootPos):Angle()
+	local viewAngle = Angle( 10, cmd:GetViewAngles().y, cmd:GetViewAngles().r)
+    cmd:SetViewAngles( viewAngle )
+end
+
+function GM:GUIMousePressed(input)
+	if GAMEMODE.ShowScoreboard then return end
+	if input == MOUSE_LEFT then LocalPlayer():ConCommand("+attack") end
+	if input == MOUSE_RIGHT then LocalPlayer():ConCommand("+attack2") end
+end
+function GM:GUIMouseReleased(input)
+	if GAMEMODE.ShowScoreboard then return end
+	if input == MOUSE_LEFT then LocalPlayer():ConCommand("-attack") end
+	if input == MOUSE_RIGHT then LocalPlayer():ConCommand("-attack2") end
+end

@@ -1,0 +1,47 @@
+classCharacterData = {}
+
+function classCharacterData.new( refOwner )
+
+	local public = {}
+
+	local inventory = classInventory.new( refOwner )
+	local equipment = classEquipment.new( refOwner )
+	local stats = classStats.new( refOwner )
+
+	local owner = refOwner or nil -- this is a backwards reference to the owner, could be player, prop or npc
+
+	function public.setOwner( newOwner )
+		if !IsValid(newOwner) then ErrorNoHalt("characterData: not a valid owner") end
+		owner = newOwner
+	end
+
+	function public.getOwner()
+		return owner
+	end
+	-- if you ever use this function, you're retarded
+	function public.setInventory( newInventory ) 
+		inventory = newInventory 
+	end
+	function public.getInventory()
+		return inventory
+	end
+	-- if you ever use this function, you're retarded
+	function public.setEquipment( newEquipment ) 
+		equipment = newEquipment 
+	end
+	function public.getEquipment()
+		return equipment
+	end
+
+	-- if you ever use this function, you're retarded
+	function public.setStats( newStats ) 
+		stats = newStats
+	end
+
+	function public.getStats() 
+		return stats 
+	end
+
+	return public
+
+end

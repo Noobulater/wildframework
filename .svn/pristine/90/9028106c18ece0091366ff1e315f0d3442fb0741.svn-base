@@ -1,0 +1,84 @@
+classRenderEntry = {}
+classRenderEntry.totalEntries = {}
+
+function classRenderEntry.new() 
+	local public = {}
+
+	local uniqueID
+	local model
+	local pos = Vector( 0, 0, 0 )
+	local ang = Angle( 0, 0, 0 )
+	local ent = nil
+
+	function public.setModel( newModel )
+		model = newModel 
+	end
+	function public.getModel( )
+		return model
+	end
+
+	function public.setPos( newPos )
+		pos = newPos
+	end
+
+	function public.getPos() 
+		return pos
+	end
+
+	function public.setAngles( newAng )
+		ang = newAng
+	end
+
+	function public.getAngles()
+		return ang
+	end
+ 
+	function public.createEnt( )
+		if IsValid(ent) then return false end 
+
+		if SERVER then
+			ent = ents.Create( "prop_physics" )
+		else
+			ent = ents.CreateClientProp( )
+		end
+
+		ent:SetPos(pos)
+		ent:SetModel( model )
+		ent:SetAngles(ang)
+		ent:Spawn()
+		ent:SetRenderMode( RENDERMODE_TRANSALPHA )	
+		if SERVER then
+			ent:DrawShadow(false)
+			if ent:GetPhysicsObject():IsValid() then
+				ent:GetPhysicsObject():SetMaterial("concrete_block")
+				ent:GetPhysicsObject():EnableMotion(false)
+				ent:GetPhysicsObject():SetPos(pos)
+			end
+		end	
+	end
+
+	function public.getEnt()
+		return ent
+	end
+
+	function public.removeEnt()
+		if IsValid(ent) then
+			ent:Remove()
+		end
+	end
+
+	function public.setUniqueID( newUniqueID )
+		uniqueID = newUniqueID
+	end
+
+	function public.getUniqueID()
+		return uniqueID
+	end
+
+	return public
+end
+
+
+if classRenderEntry.initialize != nil then
+	classRenderEntry.initialize()
+end

@@ -1,0 +1,73 @@
+
+local difficultyClass = "easy"
+
+local function generate()
+
+	local difficulty = classDifficulty.new()
+
+	local zombies = {} 
+
+	function difficulty.evaluatePlayers() -- haven't figured out how to use this yet
+		local totalScore = 0
+		for key, ply in pairs(player.GetAll()) do
+			totalScore = totalScore + ply:Health()
+		end
+
+		return totalScore
+	end
+
+	function difficulty.spawnZombie()
+		if table.Count(ents.FindByClass("snpc_*")) >= 150 then return end
+
+		local spawns = ents.FindByClass("zombieSpawn")
+
+		local availibleSpawns = {}
+
+		for _, zombieSpawn in pairs(spawns) do
+			if IsValid(zombieSpawn) && zombieSpawn:getNextSpawn() < CurTime() then
+				table.insert(availibleSpawns, zombieSpawn)
+			end
+		end
+		local desiredSpawn = table.Random(availibleSpawns)
+		local playerOrigin = util.getPlayersOrigin(util.getAlivePlayers())
+
+		for _, zombieSpawn in pairs(availibleSpawns) do
+			if playerOrigin:Distance(zombieSpawn:GetPos()) < playerOrigin:Distance(desiredSpawn:GetPos()) then
+				desiredSpawn = zombieSpawn
+			end
+		end	
+
+		if IsValid(desiredSpawn) then
+			local returndPos = findClearArea( desiredSpawn:GetPos() )
+					
+			local zombie = classAIDirector.spawnGeneric("shambler", returndPos )
+			zombie:setRunning(math.random(0,1))
+			desiredSpawn:setNextSpawn( CurTime() + desiredSpawn:getSpawnDelay() + math.random(0,1)/10 )			
+		end
+
+		if math.random(0, 60) == 0 then
+			local spawnPoint = table.Random(spawns)
+			local returndPos = findClearArea( spawnPoint:GetPos() )
+					
+			local zombie = classAIDirector.spawnGeneric("graveDigger", returndPos )	
+		end
+		if math.random(0,45) == 0 then
+			local positionTable = {}
+			for index, ply in pairs(util.getAlivePlayers()) do
+				if ply:OnGround() then
+					table.insert(positionTable, ply:GetPos())
+				end
+			end
+			local position = table.Random(positionTable)
+			timer.Simple(60, function() local trap = ents.Create("diggerTrap") trap:SetPos(position) trap:Spawn() end)
+		end
+	end
+
+	function difficulty.think()
+		difficulty.spawnZombie()
+	end
+
+	return difficulty
+
+end
+classDifficulty.register( difficultyClass, generate )

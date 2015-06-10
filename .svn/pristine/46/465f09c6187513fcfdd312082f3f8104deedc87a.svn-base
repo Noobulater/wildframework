@@ -1,0 +1,53 @@
+function invOpen( inventoryData )
+
+	inventoryData = LocalPlayer():getInventory()
+
+	local frame = vgui.Create("DFrame")
+	frame:SetSize(450, 250)
+	frame:Center()
+	frame:SetTitle("")
+	frame:MakePopup()
+	frame.Paint = function()
+		surface.SetDrawColor( 55, 55, 55, 155)
+		surface.DrawRect( 0, 0, 500, 300)
+	end
+
+	primaryWeapon = vgui.Create("itemIcon", frame)
+	primaryWeapon:SetPos(10, 30)
+	primaryWeapon:SetSize(200, 100)
+	primaryWeapon:SetSlot( -1 )
+
+	secondaryWeapon = vgui.Create("itemIcon", frame)
+	secondaryWeapon:SetPos(10, 140)
+	secondaryWeapon:SetSize(95, 100)
+	secondaryWeapon:SetSlot( -2 )
+
+	gearSlot = vgui.Create("itemIcon", frame)
+	gearSlot:SetPos(115, 140)
+	gearSlot:SetSize(95, 100)
+	gearSlot:SetSlot(-3)
+	
+	local iconSize = 50 -- this is a square
+
+	local xPos = 250
+	local yPos = 50
+	local maxX = 430
+	local padding = 10
+	for slot, itemData in pairs(inventoryData.getItems()) do
+		if slot >= 0 then -- dont render equipped stuff
+			iconSlot = vgui.Create("itemIcon", frame)
+			iconSlot:SetSize(iconSize, iconSize)
+			iconSlot:SetPos(xPos, yPos)	
+			iconSlot:SetPlayer(LocalPlayer())
+			iconSlot:SetSlot( slot )
+
+			xPos = xPos + iconSize + padding
+			if xPos + iconSize >= maxX then
+				xPos = 250
+				yPos = yPos + iconSize + padding
+			end
+		end
+	end
+
+end
+concommand.Add("openInventory", invOpen)

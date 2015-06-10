@@ -1,0 +1,93 @@
+classEffectManager = {}
+classEffectManager.currentEffects = {} 
+
+if SERVER then
+
+	util.AddNetworkString( "addEffectData" )
+
+	function networkEffectData( effectData, ply )
+		ply = ply or player.GetAll()
+		net.Start( "addEffectData" )
+			net.WriteString( effectData.getClass() )
+			net.WriteEntity( effectData.getVictim() )			
+			net.WriteUInt( effectData.getThinkSpeed(), 32 )
+			net.WriteUInt( effectData.getDuration(), 32 )
+		net.Send( ply )
+	end
+
+end
+
+if CLIENT then
+
+	net.Receive( "addEffectData", function(len)   
+		local effectData = classEffectData.genEffect( net.ReadString() )
+		effectData.setVictim( net.ReadEntity() )
+		effectData.setThinkSpeed( net.ReadUInt(32) )
+		effectData.setDuration( net.ReadUInt(32) )
+		print(LocalPlayer():Ping() / 1000)
+		effectData.setEndTime( CurTime() + effectData.getDuration() - LocalPlayer():Ping() / 1000 )
+
+		classEffectManager.add( effectData )
+	end)	
+
+end
+
+function classEffectManager.add( effectData ) 
+	if effectData == nil or !IsValid(effectData.getVictim()) then return false end
+
+	effectData.setEndTime( CurTime() + effectData.getDuration() )
+	effectData.applyEffect( effectData.getVictim() )
+
+	if SERVER then
+		networkEffectData(effectData)
+	end
+
+	table.insert(classEffectManager.currentEffects, effectData)
+
+	return true
+end
+
+function classEffectManager.getEffects( effectData ) 
+	return classEffectManager.currentEffects
+end
+
+function classEffectManager.think()
+	local cleanUpEvents = {}
+
+	local victim
+	local endTime 
+	local nextThink 
+	for key, effectData in pairs( classEffectManager.currentEffects ) do
+		victim = effectData.getVictim()
+		if IsValid( victim ) then
+			nextThink = effectData.getNextThink()
+			if nextThink < CurTime() then
+				endTime = effectData.getEndTime()
+				if endTime < CurTime() then
+					effectData.endEffect( victim )
+					table.insert(cleanUpEvents, key)
+				else
+					effectData.sustainEffect( victim )
+					effectData.setNextThink( CurTime() + effectData.getThinkSpeed() )
+				end
+			end
+		end
+	end
+
+	for id, key in pairs( cleanUpEvents ) do
+		table.remove(classEffectManager.currentEffects, key)
+	end
+end
+hook.Add("Think", "effectManagerThink", classEffectManager.think )
+
+
+if CLIENT then
+
+function classEffectManager.hudPaint()
+	for key, effectData in pairs( classEffectManager.currentEffects ) do
+		effectData.hudPaint()
+	end
+end
+hook.Add("HUDPaint", "effectManagerHudPaint", classEffectManager.hudPaint )	
+
+end

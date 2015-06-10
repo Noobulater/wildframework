@@ -1,0 +1,29 @@
+local cameraAngle = Angle( 65, 0, 0)
+local cameraDistance = 500
+
+function GM:CalcView( ply, pos, ang, fov )
+
+	local distance = LocalPlayer():GetPos():Distance(pos)
+	for _, ent in pairs( ents.FindByClass("prop_*") ) do
+		ent:SetRenderMode(RENDERMODE_TRANSALPHA)
+		distance = LocalPlayer():GetPos():Distance(ent:GetPos())
+		local alpha = math.Clamp(math.Round(255 * (distance/300)), 80, 255)		
+		ent:SetColor( Color( 255, 255, 255, alpha))
+	end
+
+    local view = {}
+    view.origin = pos + cameraAngle:Forward() * -1 * cameraDistance
+    view.angles = cameraAngle
+    view.fov = fov
+ 
+    return view
+
+end
+
+function GM:ShouldDrawLocalPlayer() 
+	return true
+end
+
+function GM:CreateMove( cmd )
+    cmd:SetViewAngles(Angle( 10, cmd:GetViewAngles().y, cmd:GetViewAngles().r))
+end

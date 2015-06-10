@@ -1,0 +1,52 @@
+classSettlement["combine01"] = {}
+classSettlement["combine01"].Condition = function(ply) 
+	return false
+end
+
+classSettlement["combine01"].tiers = {}
+-- stage one.
+classSettlement["combine01"].tiers[1] = function( settlement ) 
+	local thumper = ents.Create("prop_thumper")
+	thumper:SetPos(settlement.getOrigin())
+	thumper:SetAngles(Angle(0,math.random(0,360),0))
+	thumper:Spawn()
+	thumper:Activate()
+	thumper.Removelevel = 4
+	thumper.DecayFunction = function(self,data)
+		self:Fire("Disable",'',0)
+		self.DecayFunction = nil
+	end
+	if thumper:GetPhysicsObject():IsValid() then
+		thumper:GetPhysicsObject():EnableMotion(false)
+	end
+	thumper.DamageAllowed = true
+	thumper:SetHealth(500)
+	thumper.DropItems = {}
+	thumper.DropItems[1] = {}
+	thumper.DropItems[1].ItemClass = "item_metalprop"
+	thumper.DropItems[1].Offset = Vector(0, 0, 50)
+	thumper.DropItems[1].Amount = 3
+	
+
+	local crate = ents.Create("item_ammo_crate")
+	crate:SetKeyValue("AmmoType", table.Random(0, 1, 2, 3, 4, 5, 8))
+	crate:SetPos(thumper:GetPos() + thumper:GetAngles():Right() * 120 + thumper:GetAngles():Up() * 15)
+	crate:SetAngles(Angle(0, thumper:GetAngles().y - 90, 0))
+	crate.Removelevel = 4
+
+	local SupplyList = {"item_healthvial","item_ammo_smg1","item_ammo_ar2","item_ammo_smg1_grenade","item_ammo_ar2_altfire", "weapon_frag",}
+	local itemtbl = {}
+	for itemclass,data in pairs(CIVRP_Item_Data) do
+		table.insert(itemtbl, itemclass)
+	end	
+	local selection = table.Random(itemtbl)
+	local number = math.random(2,3)
+	for i = 1, number do
+		local item = CreateCustomProp(CIVRP_Item_Data[selection].Model, false, false)
+		item:SetAngles(crate:GetAngles())
+		local width = Vector(item:OBBMaxs().x,item:OBBMaxs().y,0) - Vector(item:OBBMins().x,item:OBBMins().y,0)
+		item:SetPos(crate:GetPos() + crate:GetAngles():Up()  * 30 + crate:GetAngles():Up()  * 20 * i + crate:GetAngles():Right() * -10 * i + crate:GetAngles():Right() * 20 + width + crate:GetAngles():Forward() * -10 )
+		item:SetCollisionGroup(COLLISION_GROUP_WEAPON)
+		item.ItemClass = selection
+	end
+end

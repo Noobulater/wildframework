@@ -1,0 +1,156 @@
+if SERVER then AddCSLuaFile("shared.lua") end
+
+SWEP.Weight             = 5
+SWEP.AutoSwitchTo       = false
+SWEP.AutoSwitchFrom     = false
+
+SWEP.Author			= "Noobulater"
+SWEP.Contact		= ""
+SWEP.Purpose		= ""
+SWEP.Instructions	= ""
+
+SWEP.Primary.ClipSize = 0
+
+SWEP.HoldType = "normal"
+
+local weapon = nil
+
+function SWEP:Initialize()
+	self:DrawShadow(false)
+	self:SetWeaponHoldType(self.HoldType)
+	self:LoadWeapon()
+end
+
+function SWEP:LoadWeapon()
+	if weapon == nil then return false end
+	self:SetDTFloat(0, -1)
+	self.WorldModel	= weapon.getModel()
+	self:SetWeaponHoldType(weapon.getHoldType())
+	self.Primary.Ammo = weapon.getAmmoType()
+	self.Primary.Automatic = weapon.getAutomatic()
+end
+
+function SWEP:GetWeapon( weaponData )
+	return weapon
+end
+
+function SWEP:SetWeapon( weaponData )
+	weapon = weaponData
+	self:LoadWeapon()
+end
+
+function SWEP:Precache()
+end
+
+SWEP.nextPFire = 0
+function SWEP:CanPrimaryAttack()
+	return ( (self:Clip1() > 0) && (self.nextPFire < CurTime()) )
+end
+
+function SWEP:PrimaryAttack()
+	if !self:CanPrimaryAttack() then return false end
+	if self:GetDTFloat(0) == -1 && self.nextPFire then self:GetDTFloat(0, -1) end	
+
+	self.nextPFire = CurTime() + weapon.getFireRate()
+
+	if weapon.primaryFire( self:GetOwner(), self ) then
+		self.Owner:LagCompensation( true )
+
+		-- local muzzle = self:LookupAttachment("muzzle")
+		-- local pos = self:GetAttachment( muzzle )["Pos"]
+		-- local ang = self:GetAttachment( muzzle )["Ang"]
+
+		local bData = {}
+		bData.Num = 1
+		bData.Src = self.Owner:GetShootPos()
+		bData.Dir = self.Owner:GetAimVector()
+		bData.Spread = Vector( weapon.getAccuracy(), weapon.getAccuracy(), weapon.getAccuracy() )
+		bData.Tracer = 1
+		bData.TracerName = weapon.getTracerName() or nil
+		bData.Force = weapon.getDamage() * 3
+		bData.Damage = weapon.getDamage()
+		bData.Num = weapon.getNumBullets() or 1
+		bData.Callback = weapon.callBack or nil
+		self.Owner:FireBullets(bData)
+
+		self.Owner:LagCompensation( false )
+
+		self.Owner:SetAnimation( PLAYER_ATTACK1 )
+		self.Owner:MuzzleFlash()
+
+
+		self:EmitSound(weapon.getFireSound() or self.Primary.Sound)
+		self:SetClip1(math.Clamp(self:Clip1() - 1, 0, weapon.getClipSize() or 10))
+
+		self.Owner:FireBullets(bullet) 
+	end
+
+	return true
+end
+
+function SWEP:TakePrimaryAmmo(num)
+
+end
+
+SWEP.nextSFire = 0
+function SWEP:CanSecondaryAttack()
+	return ( (self:Clip2() > 0) && (self.nextPFire < CurTime()) )
+end
+
+function SWEP:SecondaryAttack()
+	if !self:CheckReload() then return false end	
+
+	return true
+end
+
+function SWEP:TakeSecondaryAmmo(num)
+
+end
+
+function SWEP:CheckReload()
+	if self:GetDTFloat(0) != -1 && (self:GetDTFloat(0) < CurTime()) then
+		if weapon == nil then return false end	
+		weapon.reload( self.Owner , self )
+		self:SetDTFloat(0, -1)
+		return true
+	end
+	return false
+end
+
+function SWEP:Reload()
+	if weapon == nil then return false end
+	if self:GetDTFloat(0) != -1 then return false end	
+	self:SetDTFloat( 0, CurTime() + (weapon.getReloadTime() or 2) )
+	self.Owner:SetAnimation( PLAYER_RELOAD )
+end
+
+function SWEP:OnRestore()	
+end
+
+function SWEP:Think()
+	self:CheckReload()
+end
+
+function SWEP:Holster(wep)
+	return true
+end
+
+function SWEP:Deploy()
+	return true
+end
+
+function SWEP:OnRemove()
+end
+
+function SWEP:OwnerChanged()
+end
+
+function SWEP:Ammo1()
+end
+
+function SWEP:Ammo2()
+end
+
+function SWEP:SetupDataTables()
+	self:SetDTFloat(0, 0) -- reloading?
+end

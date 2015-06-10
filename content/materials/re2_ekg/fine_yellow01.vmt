@@ -1,0 +1,15 @@
+"UnlitGeneric"
+{
+	"$basetexture" "re2_ekg/fine_yellow01"
+	"$translucent" 1
+
+   "Proxies"
+   {
+      "AnimatedTexture"
+      {
+         "animatedtexturevar" "$basetexture"
+         "animatedtextureframenumvar" "$frame"
+         "animatedtextureframerate" 30
+      }
+   }
+}

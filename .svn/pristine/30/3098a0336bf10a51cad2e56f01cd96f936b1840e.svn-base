@@ -1,0 +1,84 @@
+classRenderData = {}
+
+if SERVER then
+	util.AddNetworkString( "addEntryData" )
+	util.AddNetworkString( "clearEntryData" )
+end
+
+function classRenderData.new() 
+	
+	local public = {}
+
+	local entries = {}
+ 
+	-- Entry Data is structured like this
+	-- {
+	-- 	model = "modelhere.mdl",
+	--	pos = Vector(0,0,0),
+	-- 	ang = Angle(0,0,0),
+	-- }
+	
+	function public.addEntry(entryData) 
+		table.insert(entries, entryData)
+		if SERVER then
+			net.Start( "addEntryData" )
+				net.WriteString( entryData.getModel() )
+				net.WriteVector( entryData.getPos() )
+				net.WriteAngle( entryData.getAngles() )
+			net.Send( player.GetAll() )	
+		end
+	end
+	
+	function public.removeEntry(entryData)
+		table.Remove(entries, uniqueID)
+	end
+	
+	function public.getEntry( uniqueID )
+		return entries[uniqueID]
+	end
+
+	function public.getEntries()
+		return entries
+	end
+
+	function public.clearEntries()
+		table.Empty(entries)
+		if SERVER then
+			net.Start( "clearEntryData" )
+			net.Send( player.GetAll() )
+		end
+	end
+	if SERVER then
+
+	function public.updatePlayer( ply, shouldClear )
+		if shouldClear then
+			net.Start( "clearEntryData" )
+			net.Send( ply )
+		end
+		for uniqueID, entry in pairs(entries) do
+			net.Start( "addEntryData" )
+				net.WriteString( entry.getModel() )
+				net.WriteVector( entry.getPos() )
+				net.WriteAngle( entry.getAngles() )
+			net.Send( ply )				
+		end
+	end
+
+	end
+
+	return public
+end
+
+if CLIENT then
+	net.Receive( "addEntryData", function(len)   
+		local entry = classRenderEntry.new()
+		entry.setModel(net.ReadString())
+		entry.setPos(net.ReadVector())
+		entry.setAngles(net.ReadAngle())
+		
+		world.data.addEntry(entry)
+	end)
+	net.Receive( "clearEntryData", function(len)   
+		world.data.clearEntries()
+	end)	
+end

@@ -1,0 +1,25 @@
+local map = "wild_acrophobia_002"
+
+local function generate()
+	world.time.pauseAt( 0.02 )
+
+	local moveTowards = function( npcEnt )
+		timer.Simple(1, function() 
+		local ply = player.GetAll()[1]
+		if IsValid(npcEnt) then
+			local normal = (ply:GetPos() - npcEnt:GetPos()):GetNormal()
+			normal.z = 0
+			npcEnt:SetLastPosition(npcEnt:GetPos() + normal * 250 + Vector(0,0,5))
+			npcEnt:SetSchedule(SCHED_FORCED_GO_RUN)
+			npcEnt:AddRelationship("player D_HT 999")
+		end
+		end)
+	end
+
+	-- timer.Create("zombie1", 7, 10, function() local zamb = ents.Create(table.Random({"npc_zombie", "npc_fastzombie"})) zamb:SetPos(Vector(-5, -769, 165)) zamb:Spawn() moveTowards(zamb) end )
+	-- timer.Create("zombie2", 8, 10, function() local zamb = ents.Create(table.Random({"npc_zombie", "npc_fastzombie"})) zamb:SetPos(Vector(769, -5, 165)) zamb:Spawn() moveTowards(zamb) end )
+
+	-- timer.Create("zombie3", 9, 10, function() local zamb = ents.Create(table.Random({"npc_zombie", "npc_fastzombie"})) zamb:SetPos(Vector(-769, -5, 165)) zamb:Spawn() moveTowards(zamb) end )
+	-- timer.Create("zombie4", 10, 10, function() local zamb = ents.Create(table.Random({"npc_zombie", "npc_fastzombie"})) zamb:SetPos(Vector(-5, 769, 165)) zamb:Spawn() moveTowards(zamb) end )
+end
+world.registerMap( map, generate )

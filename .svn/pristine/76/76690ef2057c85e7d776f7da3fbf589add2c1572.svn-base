@@ -1,0 +1,84 @@
+classCharacter = {}
+
+function classCharacter.new( refOwner )
+
+	local public = {}
+	local model
+	local name
+	local inventoryID = classInventory.new( refOwner ).getUniqueID()
+	local stats = classStats.new( refOwner )
+
+	local owner = refOwner or nil -- this is a backwards reference to the owner, could be player, prop or npc
+
+	function public.setOwner( newOwner )
+		if !IsValid(newOwner) then print("characterData: not a valid owner") end
+		owner = newOwner
+	end
+
+	function public.getOwner()
+		return owner
+	end
+
+	function public.setName( newName )
+		name = newName
+	end
+
+	function public.getName()
+		return name
+	end
+
+	function public.setModel( newModel )
+		model = newModel 
+	end
+
+	function public.getModel( )
+		return model
+	end
+
+	function public.setInventoryID( newInventoryID ) 
+		inventoryID = newInventoryID 
+	end
+
+	function public.getInventoryID()
+		return inventoryID
+	end
+
+	function public.getInventory()
+		return classInventoryData.get(inventoryID)
+	end
+
+	-- if you ever use this function, you're retarded
+	function public.setStats( newStats ) 
+		stats = newStats
+	end
+
+	function public.getStats() 
+		return stats 
+	end
+
+	if SERVER then 
+		function public.toString()
+			local compiledString = ""
+			compiledString = compiledString .. public.getName()
+			compiledString = compiledString .. "#" -- these are just random characters to signify different stuff
+			compiledString = compiledString .. public.getModel()
+			compiledString = compiledString .. "$" -- these are just random characters to signify different stuff
+			compiledString = compiledString .. public.getInventory().toString()  
+
+			--public.stringToCharacter(compiledString)
+			return compiledString
+		end
+
+		function public.loadFromString( compiledString )
+			local characterTable = string.Explode("#", compiledString )
+			local characterName = characterTable[1]
+			local characterModel = characterTable[2]
+
+			public.setName(characterName)
+			public.setModel(characterModel)
+		end
+	end
+
+	return public
+
+end

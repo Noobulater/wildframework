@@ -1,0 +1,22 @@
+function util.randRadius(origin, min, max)
+	max = max or min
+	distance = math.random(min, max)
+	angle = math.random(0, 360)
+	return origin + Vector(math.cos(angle) * distance, math.sin(angle) * distance, 0)
+end
+
+function util.DModelPanelCenter( mdlPanel, model, distance )
+	distance = distance or 1
+	local entity = ents.CreateClientProp(model)
+	entity:Spawn()
+
+	mdlPanel:SetModel( model )	
+	local center = entity:OBBCenter()
+	local dist = entity:BoundingRadius() * distance
+
+	mdlPanel:SetLookAt( center )
+	mdlPanel:SetCamPos( center + Vector(dist,dist,0) )	
+
+	entity:Remove()
+
+end

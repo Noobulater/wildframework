@@ -1,0 +1,185 @@
+if GM.useTopDown then
+
+local cameraAngle = Angle( 65, 0, 0)
+local cameraDistance = GM.CameraDistance
+local cameraPos = Vector( 0, 0, 0 )
+
+local devFirstPerson = false
+gui.EnableScreenClicker(!devFirstPerson)
+
+
+-- HANDLES WORLD BRUSHES V
+
+local function findBlockingLOS( hideTable )
+	local traceData = {}
+	traceData.start = cameraPos
+	traceData.endpos = LocalPlayer():GetPos() + Vector(0,0,5)
+	traceData.mins, traceData.maxs = LocalPlayer():GetCollisionBounds()
+	traceData.filter = hideTable
+	traceData.mask = MASK_SOLID 
+	local trace = util.TraceHull(traceData)
+	if trace.HitNonWorld then
+		if trace.Entity then
+			table.insert( hideTable, trace.Entity )
+			findBlockingLOS( hideTable )
+		end
+	end
+end
+local function checkLOS()
+	local hideTable = {LocalPlayer()}
+	findBlockingLOS( hideTable )
+	for _, ent in pairs(hideTable) do
+		if ent != LocalPlayer() && ent:GetClass() == "func_brush" then
+			ent:SetRenderMode(RENDERMODE_TRANSALPHA)
+			ent:SetColor(Color(255,255,255,155))
+		end
+	end
+end
+
+local function refreshBrushes() 
+	for _, ent in pairs( ents.FindByClass("func_brush") ) do
+		ent:SetRenderMode(RENDERMODE_TRANSALPHA)
+		ent:SetColor(Color(255,255,255,255))	
+	end
+	timer.Simple(1, function() refreshBrushes()  end)
+end
+timer.Simple(1, function() refreshBrushes()  end)
+
+
+function GM:CalcView( ply, pos, ang, fov )
+
+	if devFirstPerson then
+		local view = {}
+	    view.origin = pos
+	    view.angles = ang
+	    view.fov = fov
+
+	    return view
+	end
+
+	for _, ent in pairs( ents.FindByClass("prop_*") ) do
+		ent:SetRenderMode(RENDERMODE_TRANSALPHA)
+		prepareEntAlpha(ent)	
+	end
+	
+	cameraPos = pos + cameraAngle:Forward() * -1 * cameraDistance + GAMEMODE.CamOffset
+
+	checkLOS()
+
+	local view = {}
+	view.origin = cameraPos
+	view.angles = cameraAngle
+	view.fov = fov
+
+    return view
+
+end
+concommand.Add("tfps", function() if !LocalPlayer():IsAdmin() then return false end gui.EnableScreenClicker(devFirstPerson) devFirstPerson = !devFirstPerson end)
+
+function GM:ShouldDrawLocalPlayer() 
+	return !devFirstPerson
+end
+
+function GM:CreateMove( cmd )
+
+	if devFirstPerson then return end
+
+	local ply = LocalPlayer()
+
+	if !ply:Alive() or !vgui.GetWorldPanel().isMouseInside() then 
+		cmd:SetForwardMove(0)
+		cmd:SetSideMove(0)
+		return 
+	end
+
+	local x, y = gui.MousePos( )
+	local aimPos = gui.ScreenToVector(x,y)--LPCameraScreenToVector(gui.MouseX(), gui.MouseY(), ScrW(), ScrH(), LocalPlayer():GetAngles(), 7)
+	--print(aimPos)
+
+	local traceData = {}
+	traceData.start = cameraPos
+	traceData.endpos = cameraPos + aimPos * 100000
+	local filterTable = ents.FindByClass("prop_physics") 
+	table.insert(filterTable, ply)
+	traceData.filter = filterTable
+
+	local trace = util.TraceLine(traceData)
+
+	local shootPos = ply:GetShootPos()
+
+	if trace.HitWorld && !input.IsKeyDown(KEY_LALT) then
+		trace.HitPos.z = shootPos.z - 30
+	end
+
+	local viewAngle = (trace.HitPos - shootPos):Angle()
+
+	if !input.IsKeyDown(KEY_LALT) && trace.Entity != nil && (trace.Entity:IsNPC() or trace.Entity:IsPlayer())  then
+		local bone = trace.Entity:LookupBone("ValveBiped.Bip01_Spine2") or 0 
+		local pos = trace.Entity:GetBonePosition( bone )
+
+		viewAngle = (pos - shootPos):Angle()
+	end
+
+	viewAngle.p = math.floor(viewAngle.p)
+	viewAngle.y = math.floor(viewAngle.y)
+	viewAngle.r = math.floor(viewAngle.r)
+
+	cmd:SetViewAngles(viewAngle)
+
+	--cmd:SetViewAngles(Angle(0,85,0))
+
+	-- sigh... I really wish I could explain this one, but it works... and it uses trig
+	local angModifier = cmd:GetViewAngles().y
+	-- used for up down
+	local x = math.floor(math.cos(math.rad(angModifier)) * 100) / 100
+	local y = math.floor(math.sin(math.rad(angModifier)) * 100) / 100
+	-- used for left / right
+	local x1 = math.floor(math.cos(math.rad(angModifier + 90)) * 100) / 100
+	local y1 = math.floor(math.sin(math.rad(angModifier + 90)) * 100) / 100
+
+	local vsideMove = 0 
+	local vforwardMove = 0 
+
+	local hsideMove = 0 
+	local hforwardMove = 0 
+
+	if ply:KeyDown(IN_FORWARD) then
+		vsideMove = GAMEMODE.RunSpeed
+		vforwardMove = GAMEMODE.RunSpeed 
+	end
+	if ply:KeyDown(IN_BACK) then
+		vsideMove = -GAMEMODE.RunSpeed
+		vforwardMove = -GAMEMODE.RunSpeed 
+	end
+
+	if ply:KeyDown(IN_MOVERIGHT) then
+		hsideMove = GAMEMODE.RunSpeed
+		hforwardMove = GAMEMODE.RunSpeed 
+	end
+	if ply:KeyDown(IN_MOVELEFT) then
+		hsideMove = -GAMEMODE.RunSpeed
+		hforwardMove = -GAMEMODE.RunSpeed 
+	end
+
+	cmd:SetForwardMove(vforwardMove * x + hforwardMove * x1)
+	cmd:SetSideMove(vsideMove * y + hsideMove * y1)
+end
+
+function GM:GUIMousePressed(input)
+	if GAMEMODE.ShowScoreboard then return end
+	if input == MOUSE_LEFT then LocalPlayer():ConCommand("+attack") end
+	if input == MOUSE_RIGHT then LocalPlayer():ConCommand("+attack2") end
+	if input == MOUSE_MIDDLE then LocalPlayer():ConCommand("+voicerecord") end	
+end
+function GM:GUIMouseReleased(input)
+	if GAMEMODE.ShowScoreboard then return end
+	if input == MOUSE_LEFT then LocalPlayer():ConCommand("-attack") end
+	if input == MOUSE_RIGHT then LocalPlayer():ConCommand("-attack2") end
+	if input == MOUSE_MIDDLE then LocalPlayer():ConCommand("-voicerecord") end
+end
+
+vgui.GetWorldPanel().isMouseInside = function() return vgui.GetWorldPanel().mouseInside end
+vgui.GetWorldPanel().OnCursorEntered = function() vgui.GetWorldPanel().mouseInside = true end
+vgui.GetWorldPanel().OnCursorExited = function() vgui.GetWorldPanel().mouseInside = false end
+
+end

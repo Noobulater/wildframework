@@ -1,0 +1,60 @@
+
+include("shared.lua")
+AddCSLuaFile("cl_init.lua")
+
+function ENT:Initialize() 
+	self:SetModel("models/props_c17/gravestone003a.mdl")
+	self:PhysicsInit( SOLID_VPHYSICS )
+	self:SetMoveType( MOVETYPE_VPHYSICS )
+	self:SetSolid( SOLID_VPHYSICS )
+
+	local phys = self:GetPhysicsObject()
+	if IsValid(phys) then
+		phys:EnableMotion(false)
+	end	
+
+	timer.Simple(self:getSpawnDelay(), function() if IsValid(self) then self:spawnZombie() end end )
+end
+
+ENT.spawnDelay = 3
+function ENT:setSpawnDelay(newDelay) 
+	self.spawnDelay = newDelay
+end
+
+function ENT:getSpawnDelay() 
+	return self.spawnDelay
+end
+
+function ENT:OnTakeDamage( dmginfo )
+	if self:Health() <= 0 then return end
+
+    self:SetHealth(self:Health() - dmginfo:GetDamage())
+    if self:Health() <= 0 then
+        self:Remove()
+    end
+end
+
+function areaClear( pos )
+	local ent = ents.FindInSphere( pos, 30 )
+    for k,v in pairs( ent ) do
+   		if v:IsPlayer() or v:IsNPC() then
+   			return false
+   		end
+   	end
+   	return true
+end
+
+function findClearArea( origin )
+	local pos = util.randRadius( origin, 40, 100)
+	if areaClear(pos) then
+		return pos
+	end
+	return findClearArea( origin )
+end
+
+function ENT:spawnZombie()
+	local returndPos = findClearArea( self:GetPos() )
+	classAIDirector.spawnGeneric("shambler", returndPos )
+	timer.Simple(self:getSpawnDelay(), function() if IsValid(self) then self:spawnZombie() end end )
+end
+

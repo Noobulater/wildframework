@@ -1,0 +1,110 @@
+ballistics = ballistics or {}
+ballistics.ActiveBullets = {}
+ballistics.Gravity = Vector(0, 0, -9.81 / 0.01905)
+-- ballistics.Gravity = Vector(0, 0, -9.81 / 0.01905)
+ballistics.SpecificGasConstant = 0.157604
+ballistics.Temperature = 20 --C
+ballistics.AirPressure = 1 --atm
+ballistics.AirDensity = ballistics.AirPressure / (ballistics.SpecificGasConstant * ballistics.Temperature)
+
+local function calcBulletArea(diameter)
+	return diameter * diameter * math.pi * 0.25
+end
+
+local bulletBallistics = {}
+bulletBallistics["9mmPara"] = {}
+bulletBallistics["9mmPara"].MuzzleVelocity = 377 / 0.01905 --m/s 377
+bulletBallistics["9mmPara"].Mass = 7.5 --g
+bulletBallistics["9mmPara"].CaseMass = 4.0 --g
+bulletBallistics["9mmPara"].Area = calcBulletArea(0.00901 / 0.01905) --m^2
+bulletBallistics["9mmPara"].DragCoefficient = 0.1
+
+local function calcBulletDrag(bulletInfo, velocity)
+	return -velocity * (bulletInfo.Mass / (bulletInfo.DragCoefficient * ballistics.AirDensity * (velocity:Length() ^ 2) * bulletInfo.Area * 0.5))
+end
+
+local function stepBullet(bullet)
+	if not bullet.ply._virus_lagcomp then
+		bullet.ply:LagCompensation(true)
+		bullet.ply._virus_lagcomp = true
+	end
+
+	local time = FrameTime()
+	local bulletInfo = bulletBallistics[bullet.type]
+	bullet.velocity = bullet.velocity + (ballistics.Gravity + calcBulletDrag(bulletInfo, bullet.velocity)) * time
+	bullet.pos = bullet.pos + bullet.velocity * time
+
+	local tracedata = {}
+	tracedata.start = bullet.oldpos
+	tracedata.endpos = bullet.pos
+	tracedata.filter = bullet.ignore
+	--tracedata.mask = MASK_SHOT + MASK_WATER
+	local traceInfo = util.TraceLine(tracedata)
+
+
+	-- local startNode = ents.Create("prop_physics")
+	-- startNode:SetModel("models/healthvial.mdl")
+	-- startNode:SetColor(Color(0, 0, 0, 0))
+	-- startNode:SetRenderMode(RENDERMODE_TRANSCOLOR)
+	-- startNode:SetPos(bullet.oldpos)
+	-- startNode:SetAngles(Angle(90, 0, 0))
+	-- startNode:SetSolid(SOLID_NONE)
+	-- startNode:SetMoveType(MOVETYPE_NONE)
+	-- startNode:SetCollisionGroup(COLLISION_GROUP_IN_VEHICLE)
+	-- startNode:Spawn()
+	-- startNode:GetPhysicsObject():EnableMotion(false)
+
+	-- local endNode = ents.Create("prop_physics")
+	-- endNode:SetModel("models/healthvial.mdl")
+	-- endNode:SetColor(Color(0, 0, 0, 0))
+	-- endNode:SetPos(bullet.pos)
+	-- endNode:SetAngles(Angle(90, 0, 0))
+	-- endNode:SetRenderMode(RENDERMODE_TRANSCOLOR)
+	-- endNode:SetSolid(SOLID_NONE)
+	-- endNode:SetMoveType(MOVETYPE_NONE)
+	-- endNode:SetCollisionGroup(COLLISION_GROUP_IN_VEHICLE)
+	-- endNode:Spawn()
+	-- endNode:GetPhysicsObject():EnableMotion(false)
+
+	-- constraint.Rope(startNode, endNode, 0, 0, Vector(0, 0, 0), Vector(0, 0, 0), (bullet.oldpos - bullet.pos):Length(), 0, 0, 2, "cable/rope", true)
+
+	if traceInfo.Hit then
+		ballistics.impact(traceInfo, bullet)
+		ballistics.ActiveBullets[bullet.id] = nil
+	else
+		bullet.oldpos = bullet.pos
+	end
+
+	bullet.ply:LagCompensation(false)
+	bullet.ply._virus_lagcomp = false
+end
+
+local function ballisticsThink()
+	for _, bullet in pairs(ballistics.ActiveBullets) do
+		stepBullet(bullet)
+	end
+end
+hook.Add("Think", "virus_ballisticsThink", ballisticsThink)
+
+function util.FireRealBulletEx(ply, velocity, pos, ignore, type)
+	if SERVER then
+		local newBullet = {}
+		newBullet.ply = ply
+		newBullet.velocity = velocity
+		newBullet.pos = pos
+		newBullet.oldpos = pos
+		newBullet.ignore = ignore
+		newBullet.id = #ballistics.ActiveBullets + 1
+		newBullet.type = type
+		ballistics.ActiveBullets[newBullet.id] = newBullet
+
+		stepBullet(newBullet)
+	end
+end
+
+function util.FireRealBullet(ply, type)
+	if SERVER then
+		local bulletInfo = bulletBallistics[type]
+		util.FireRealBulletEx(ply, ply:GetVelocity() + (ply:GetAimVector():GetNormal() * bulletInfo.MuzzleVelocity), ply:GetShootPos(), {ply}, type)
+	end
+end

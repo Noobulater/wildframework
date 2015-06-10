@@ -1,0 +1,14 @@
+local class = "medvial"
+
+local function generate()
+	local item = classItemData.new()
+	item.setClass(class)
+	item.setName("Med-Vial")
+	item.setDescription("Heals the User to full health. go ahead, Chugg it.")
+	item.setModel("models/healthvial.mdl")
+	item.use = function( user ) if SERVER then user:EmitSound("items/smallmedkit1.wav") user:SetHealth(100) end end
+
+	return item
+end
+
+classItemData.register( class, generate )

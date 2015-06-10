@@ -1,0 +1,11 @@
+local function shouldCollide(ent1, ent2)
+	print("checking")
+	if ent1:IsPlayer() && ent2:GetClass() == "killabomb" then
+		return false
+	end
+	if ent1:GetClass() == "snpc_humanoid" && ent2:GetClass( ) == "snpc_humanoid" then
+		print("here")
+		return false
+	end
+end
+hook.Add("ShouldCollide", "npcShouldCollide", shouldCollide)

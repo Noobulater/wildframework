@@ -1,0 +1,26 @@
+data = data or {}
+data.items = data.items or {}
+
+item = {}
+item.name 			= "Cola"
+item.description 	= "A shiny can filled with bubbly refreshment. The label says it has 130 calories, and is cola flavored."
+item.model			= Model("models/props_junk/PopCan01a.mdl")
+item.angle			= Angle(0, 90, 0)
+item.distance		= -4
+item.skin			= 1
+item.width			= 1
+item.height			= 2
+function item.use(ply)
+	print("You drank the cola ... you monster!")
+end
+table.insert(data.items, item)
+
+item = {}
+item.name			= "Bananna"
+item.description	= "Yellow"
+item.model			= Model("models/props/cs_italy/bananna.mdl")
+item.angle 			= Angle(0, 90, 0)
+item.distance		= -3
+item.width			= 2
+item.height			= 1
+table.insert(data.items, item)

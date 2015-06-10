@@ -1,0 +1,8 @@
+function GM:OnNPCKilled(npc, killer, weapon)
+	local uniqueID = npc.EUID
+	if uniqueID != nil then
+		if world.data.getEntry(uniqueID).getClass() == npc:GetClass() then
+			world.data.removeEntry(uniqueID)
+		end
+	end
+end

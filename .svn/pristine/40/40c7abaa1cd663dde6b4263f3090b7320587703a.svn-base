@@ -1,0 +1,47 @@
+solidCheckTime = 3
+
+function solidCheck( entry )
+	local remove = true
+	local solidDist = entry.getSolidDistance() or 300
+	local pos = entry.getPos()
+	if !entry.getStatic() && IsValid(entry.getEnt()) then
+		pos = entry.getEnt():GetPos()
+	end
+	
+	for key, ply in pairs(player.GetAll()) do
+		if IsValid(ply) && ply:GetPos():Distance(pos) < solidDist then
+			remove = false 
+			break
+		end
+	end
+	if remove then
+		entry.removeEnt()
+		return true
+	end
+	timer.Simple(solidCheckTime, function() solidCheck(entry) end )
+end
+
+local function solidify( ply, cmd, args )
+	if world.data == nil then world.initialize() print("worldData doesn't exist") return end
+	local entries = world.data.getEntries()
+	
+	local uniqueID = math.Round(args[1])
+
+	-- Define locals, makes it cheapr
+	local entry = entries[uniqueID]
+	if entry != nil then
+		local mdl = entry.getModel()
+		local pos = entry.getPos()
+		local ang = entry.getAngles()
+
+		local distance = ply:GetPos():Distance(pos)
+
+		if distance > 1000 then return false end
+
+		if !IsValid(entry.getEnt()) then
+			entry.createEnt()
+			timer.Simple(solidCheckTime, function() solidCheck(entry) end )
+		end
+	end
+end
+concommand.Add( "solidify", solidify ) 

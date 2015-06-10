@@ -1,0 +1,27 @@
+function plySpawn( ply )
+
+	if ply:getData() == nil then return end
+
+	local giveShotgun = true
+	local giveMedkit = true
+	local giveCure = true
+	for key, itemData in pairs(ply:getInventory().getItems()) do
+		if itemData != 0 then
+			if key < 0 then 
+				itemData.equip( ply )
+			end
+			if itemData.getClass() == "medkit" then
+				giveMedkit = false
+			elseif itemData.getClass() == "cure" then
+				giveCure = false
+			elseif itemData.getClass() == "shotgun" then
+				giveShotgun = false
+			end
+		end
+	end
+	if giveShotgun then local shotgun = classItemData.genItem("shotgun") shotgun.setTemporary(true) ply:getInventory().addItem(shotgun) end	
+	if giveMedkit then local medkit = classItemData.genItem("medkit") medkit.setTemporary(true) ply:getInventory().addItem(medkit) end	
+	if giveCure then local cure = classItemData.genItem("cure") cure.setTemporary(true) ply:getInventory().addItem(cure) end		
+	local sAmmo = classItemData.genItem("shotgunAmmo") sAmmo.setTemporary(true) ply:getInventory().addItem(sAmmo)
+end
+hook.Add("PlayerSpawn", "defaultLoadout", plySpawn)

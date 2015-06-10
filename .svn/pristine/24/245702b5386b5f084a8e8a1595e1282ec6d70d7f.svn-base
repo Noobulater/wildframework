@@ -1,0 +1,57 @@
+sqlex = {}
+
+-- Creates a new table
+function sqlex.CreateTable(tableName, columns)
+	tableName = SQLStr(tableName or "")
+	
+	-- Make sure the table does not already exist.
+	if sql.TableExists(tableName) then
+		MsgN("SQLEX ERROR: Table '" .. tableName .. "' already exists!")
+		return false
+	end
+	
+	-- Build the query string from the columns table.
+	local query = "CREATE TABLE " .. tableName .. " ("
+	local first = true
+	for keyName, keyType in pairs(columns) do
+		if first then
+			first = false
+		else
+			query = query .. ","
+		end
+		query = query .. " " .. SQLStr(keyName) .. " " .. SQLStr(keyType)
+	end
+	query = query .. " )"
+	
+	-- Query the command, if there is an error msg it.
+	local result = sql.Query(query)
+	if not sql.TableExists(tableName) then
+		MsgN("SQLEX ERROR: Problem creating '" .. tableName .. "' '" .. sql.LastError(result) .. "'")
+		return false
+	end
+	return true
+end
+
+function sqlex.SelectAll(tableName, whereCond)
+	-- Error if the table doesn't exists
+	if not sql.TableExists(tableName) then
+		MsgN("SQLEX ERROR: Attempted to select from table '" .. tableName .. "', does not exists!")
+		return false
+	end
+	
+	-- Build query
+	local query = "SELECT * FROM " .. tableName
+	if type(whereCond) == "string" and string.len(whereCond) > 0 then
+		query = query .. " WHERE " .. whereCond
+	end
+	
+	-- Get result and msg any errors
+	local result = sql.Query(query)
+	if not result then
+		MsgN("SQLEX ERROR: Problem selecting all from '" .. tableName .. "' '" .. sql.LastError(result) .. "'")
+		return false
+	end
+	
+	return result
+end
+

@@ -1,0 +1,61 @@
+classEquipment = {}
+
+function classEquipment.new( refOwner )
+	local public = {}
+	local owner = refOwner or nil -- this could be the person Who Crafted it/inially found it w.e
+
+	local equipment = {}
+	equipment[1] = nil -- this is the primary Weapon
+	equipment[2] = nil --  this is the secondary Weapon
+	equipment[3] = nil -- The gear slot
+
+	function public.setOwner( newOwner )
+		if !IsValid(newOwner) then ErrorNoHalt("itemData: not a valid owner") end
+		owner = newOwner
+	end
+
+	function public.getOwner()
+		return owner
+	end
+
+	function public.getEquipment()
+		return equipment
+	end
+
+	function public.getSlot( slot )
+		return equipment[slot]
+	end
+
+	function public.equip( slot, item )
+
+		local fits = false
+
+		for key, type in pairs( item.getTypes() ) do
+			if type == slot then 
+				fits = true
+				break
+			end
+		end
+
+		if !fits then return false end 
+
+		equipment[slot] = item
+		if item.equip then
+			item.equip( owner )
+		end
+
+		return true
+	end
+
+	function public.unEquip( slot, item )
+
+		equipment[slot] = nil
+		if item.unEquip then
+			item.unEquip( owner )
+		end
+
+		return true
+	end
+
+	return public
+end

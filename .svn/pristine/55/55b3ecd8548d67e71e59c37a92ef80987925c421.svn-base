@@ -1,0 +1,9 @@
+inventory = {}
+
+function inventory.new()
+	local public = {}
+	
+	
+	
+	return public
+end

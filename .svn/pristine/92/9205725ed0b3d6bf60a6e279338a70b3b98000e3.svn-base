@@ -1,0 +1,27 @@
+local PMETA = FindMetaTable("Player")
+
+function PMETA:setupData()
+	if self.characters != nil then return false end
+	self.selectedCharacter = 0
+	self.characters = {}
+
+	for i = 0, GAMEMODE.MaxCharacters do
+		self.characters[i] = playerData.new()
+	end
+end
+
+function PMETA:getData()
+	return self.characters[self.selectedCharacter] 
+end
+
+function PMETA:getCharacter()
+	return self.selectedCharacter
+end
+
+function PMETA:getStats()
+	return self:getData():getStats()
+end
+
+function PMETA:getInventory()
+	return self:getData():getInventory()
+end
