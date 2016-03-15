@@ -34,10 +34,14 @@ local function generate()
 			dmginfo:SetDamage( effect.getDamage() )
 			dmginfo:SetDamageType( DMG_SLASH )
 			dmginfo:SetInflictor( victim )
-			victim:TakeDamageInfo(dmginfo)
+
+			if victim:IsNPC() then
+				victim:SetHealth( victim:Health() - effect.getDamage() )
+			else
+				victim:TakeDamageInfo(dmginfo)
+			end
  
 			if IsValid(victim) && victim:Health() > 0 then
-
 				local visual = EffectData()
 				visual:SetOrigin( victim:GetPos() + Vector(0,0,40) )
 				util.Effect("BloodImpact", visual )

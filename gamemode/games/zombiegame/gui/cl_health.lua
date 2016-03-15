@@ -3,7 +3,7 @@ local ekgOkay = Material("re2_ekg/fine_yellow01")
 local ekgCaution = Material("re2_ekg/caution03")  
 local ekgDanger = Material("re2_ekg/danger02")  
 
-local function evaluateHealth( entity )
+function util.evaluateHealth( entity )
 	local Hp = entity:Health()
 	local status = "Fine"
 	local col = Color(0,255,0,155)
@@ -37,7 +37,7 @@ local function drawLocalPlayerHealth()
 	if !LocalPlayer():Alive() then return end 
 	if LocalPlayer():GetObserverMode() != OBS_MODE_NONE then return end
 	
-	local text, drawColor, texture = evaluateHealth( LocalPlayer() )
+	local text, drawColor, texture = util.evaluateHealth( LocalPlayer() )
 
 	local xPos = 0
 	local yPos = ScrH() - 64
@@ -62,7 +62,7 @@ end
 
 local function drawEntityHealth( entity )
 	if entity:IsPlayer() && !entity:Alive() then return end
-	local text, drawColor, texture = evaluateHealth( entity )
+	local text, drawColor, texture = util.evaluateHealth( entity )
 	local distance = entity:GetPos():Distance(LocalPlayer():GetPos())
 	drawColor.a = math.Clamp(30 * (1-(distance/300)),0,30)
 

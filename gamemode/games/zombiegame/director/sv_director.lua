@@ -3,7 +3,13 @@ classDirector = {}
 function classDirector.new()
 	local public = {}
 
-	local difficulty = classDifficulty.genDifficulty( "easy" )
+	local active = false
+
+	local fileName = string.lower(string.gsub(GAMEMODE.Name, " ", "")) .. "/nextcfg/difficulty.txt"
+	local content = file.Read(fileName)
+	if !content then content = table.Random(classDifficulty.getDifficultiesClass()) end
+
+	local difficulty = classDifficulty.genDifficulty( content )
 
 	local nextThink = 0
 
@@ -16,16 +22,17 @@ function classDirector.new()
 		return difficulty
 	end
 
-	function public.think() -- all the thinking is done by the difficulties
-		if nextThink != nil && nextThink >= CurTime() then 
-			return 
-		else 
-			if difficulty then
-				difficulty.think()
-				if difficulty.getThinkSpeed() then
-					nextThink = CurTime() + difficulty.getThinkSpeed()
-				end				
-			end
+	function public.setActive(newActive)
+		active = newActive
+	end
+
+	function public.getActive()
+		return active
+	end
+
+	function public.think() -- all the thinking is done by the difficulties, I REALLY SHOULD REMOVE this director
+		if difficulty then
+			difficulty.think()
 		end
 	end
 

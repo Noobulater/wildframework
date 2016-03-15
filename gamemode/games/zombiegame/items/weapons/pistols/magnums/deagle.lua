@@ -7,7 +7,7 @@ local function generate()
 	weapon.setDescription("Packs a punch")
 	weapon.setFireSound("weapons/deagle/deagle-1.wav")	
 	weapon.setFireRate( .1 )
-	weapon.setDamage(25)
+	weapon.setDamage(40)
 	weapon.setAccuracy(.04)
 	weapon.setClipSize(7)
 	weapon.setHoldType("pistol")
@@ -17,5 +17,9 @@ local function generate()
 end
 
 classItemData.register( class, generate )
+
+if SERVER then
+	classScarcity.addItemToCategory(3, class)
+end
 
 -- EXAMPLE OF A CUSTOM WEAPON

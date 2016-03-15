@@ -23,19 +23,36 @@ local function generate()
 									end
 								end
 							end)
-			swep.nextPFire = CurTime() + weapon.getFireRate()
+			swep:setNextPFire(CurTime() + weapon.getFireRate())
 		end
 		return false
 	end	
 
-	function weapon.paperDoll(ply, prop)
-		local BoneIndx = ply:LookupBone("ValveBiped.Bip01_R_Hand")
-		local BonePos , BoneAng = ply:GetBonePosition( BoneIndx )
+	function weapon.paperDoll( )
+	    local tempData = {}
+	    tempData.model = weapon.getModel()
+	    tempData.bone = "ValveBiped.Bip01_R_Hand"
+	    tempData.color = Color(255,255,255,255)
+	    tempData.skin = 1
+	    tempData.material = ""
+	    tempData.pos = Vector(-3.2,-1.1,-3.2)
+	    tempData.ang = Angle(270, 0, 0)
+	    tempData.scale = Vector(1,1,1)
 
-		prop:SetPos(BonePos + BoneAng:Forward() * 3 + BoneAng:Up() * -2 + BoneAng:Right() * 2 )
-		prop:SetAngles(BoneAng + Angle(90,0,180))
-		prop:SetModel(weapon.getModel())
+	    return tempData
 	end
+
+	function weapon.deploy( user )
+		if IsValid(user) then 
+			getPaperdollManager().register(user, class, weapon.paperDoll()) 
+		end
+	end
+
+	function weapon.holster( user )
+		if IsValid(user) then 
+			getPaperdollManager().clearTag(user, class)
+		end
+	end	
 
 	return weapon
 end

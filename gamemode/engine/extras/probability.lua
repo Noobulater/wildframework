@@ -1,16 +1,17 @@
--- classProbability = {}
+classProbability = {}
 
--- function classProbability.new()
+function classProbability.new( newFactor )
 
--- 	local public = {}
+	local public = {}
 
--- 	local results = {}
+	local factor = newFactor
+	local results = {}
 
--- 	function public.addResult(result, chance)
+	function public.addResult(result, chance)
 		
--- 	end
+	end
 
 
--- 	return public
+	return public
 
--- end
+end

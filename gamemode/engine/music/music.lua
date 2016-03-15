@@ -180,21 +180,21 @@ function classMusicPlayer.new()
 	local holdThink
 
 	function public.play( musicPath, loop, fadeOut )
-		holdThink = true -- Because it takes some time to get the music from the webserver we have this to stop it for a brief second
-		sound.PlayURL(baseFolder..musicPath, "", function( soundChannel ) 
-			if current && current:IsValid() then current:Stop() end
-			if IsValid(soundChannel) then
-				public.setCurrentPath(musicPath) 
-				public.setCurrent(soundChannel) 
-				public.setLoop(loop or false) 
-				public.setFadeOut( fadeOut or false) 
-				public.setEndTime(CurTime() + (musicLengths[musicPath] or 10))
-				soundChannel:SetVolume(1)
-				holdThink = false
-			else
-				public.play( musicPath, loop, fadeOut )
-			end
-		end)
+		-- holdThink = true -- Because it takes some time to get the music from the webserver we have this to stop it for a brief second
+		-- sound.PlayURL(baseFolder..musicPath, "", function( soundChannel ) 
+		-- 	if current && current:IsValid() then current:Stop() end
+		-- 	if soundChannel then
+		-- 		public.setCurrentPath(musicPath) 
+		-- 		public.setCurrent(soundChannel) 
+		-- 		public.setLoop(loop or false) 
+		-- 		public.setFadeOut( fadeOut or false) 
+		-- 		public.setEndTime(CurTime() + (musicLengths[musicPath] or 10))
+		-- 		soundChannel:SetVolume(GAMEMODE.musicVolume/100)
+		-- 		holdThink = false
+		-- 	else
+		-- 		public.play( musicPath, loop, fadeOut )
+		-- 	end
+		-- end)
 	end
 
 	function public.think()

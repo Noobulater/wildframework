@@ -21,7 +21,6 @@ hook.Add("ShowSpare2", "voteSkip", voteSkip)
 
 end
 
-
 if CLIENT then
 	
 local padding = 10

@@ -6,7 +6,7 @@ local function generate()
 	weapon.setName("m4a1 Carbine")
 	weapon.setDescription("Strong and accurate")
 	weapon.setFireSound("weapons/m4a1/m4a1_unsil-1.wav")	
-	weapon.setFireRate( .08 )
+	weapon.setFireRate( .06 )
 	weapon.setAutomatic(true)
 	weapon.setDamage(19)
 	weapon.setAccuracy(.03)
@@ -19,3 +19,7 @@ end
 classItemData.register( class, generate )
 
 -- EXAMPLE OF A CUSTOM WEAPON
+
+if SERVER then
+	classScarcity.addItemToCategory(3, class)
+end

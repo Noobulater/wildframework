@@ -72,6 +72,7 @@ function PANEL:Draw()
 		count = count + 1
 	end
 
+
 	return true
 end
 
@@ -251,13 +252,13 @@ function PANEL:BindPress(ply, bind, pressed)
 						if IsValid(wep) then
 							if wep.GetWeapon == nil or wep:GetWeapon().getClass() != inventory.getSlot(slot).getClass() then
 								RunConsoleCommand("selectCustomWeapon", slot)
-							else
-								for index, itemPanel in pairs(self.items) do
-									if itemPanel:GetSlot() == slot then
-										itemPanel:Use()
-										break
-									end
-								end		
+							-- else
+							-- 	for index, itemPanel in pairs(self.items) do
+							-- 		if itemPanel:GetSlot() == slot then
+							-- 			itemPanel:Use()
+							-- 			break
+							-- 		end
+							-- 	end		
 							end	
 						else
 							RunConsoleCommand("selectCustomWeapon", slot)			

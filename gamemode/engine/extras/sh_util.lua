@@ -44,7 +44,7 @@ function util.RefreshItems()
 				else
 					table.insert(equipmentTable, item.getClass())
 				end
-			else
+			elseif item.isItem() then
 				table.insert(itemTable, item.getClass())
 			end	
 		end			
@@ -84,12 +84,19 @@ function util.randomItem(type)
 	return returnValue
 end
 
-function util.FindScreenCoordinates(panel)
+function util.findScreenCoordinates(panel)
 	local parent = panel:GetParent()
 	if parent && parent != vgui.GetWorldPanel() then
-		local prntX, prntY = util.FindScreenCoordinates(parent)
+		local prntX, prntY = util.findScreenCoordinates(parent)
 		return xpos + prntX, ypos + prntY	
 	end
+	return xpos, ypos
+end
+
+function util.findEndPositions(panel)
+	local xpos,ypos = panel:GetPos()
+	xpos = xpos + panel:GetWide()
+	ypos = ypos + panel:GetTall()
 	return xpos, ypos
 end
 
@@ -108,5 +115,21 @@ function util.getAlivePlayers()
 		end
 	end
 	return returnTable
+end
+
+function util.toVectorTable( vector )
+	return { x = vector.x, y = vector.y, z = vector.z}
+end
+
+function util.fromVectorTable( vectorTable )
+	return Vector(vectorTable.x, vectorTable.y, vectorTable.z)
+end
+
+function util.toAngleTable( angle )
+	return { p = angle.p, y = angle.y, r = angle.r }
+end
+
+function util.fromAngleTable( angleTable )
+	return Angle(angleTable.p, angleTable.y, angleTable.r)
 end
 

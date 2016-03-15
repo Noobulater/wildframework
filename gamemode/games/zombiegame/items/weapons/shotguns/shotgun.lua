@@ -7,7 +7,7 @@ local function generate()
 	weapon.setDescription("This is an example of a custom weapon")
 	weapon.setFireSound("weapons/shotgun/shotgun_fire6.wav")	
 	weapon.setFireRate( .3 )
-	weapon.setDamage(10)
+	weapon.setDamage(12)
 	weapon.setAccuracy(.1)
 	weapon.setClipSize(6)
 	weapon.setNumBullets(8)
@@ -15,11 +15,11 @@ local function generate()
 	weapon.setHoldType("shotgun")
 	weapon.setModel("models/weapons/w_shotgun.mdl")
 
-	weapon.callBack = function( ply, tr, dmgInfo )  
-		local visual = EffectData()
-		visual:SetOrigin( tr.HitPos )
-		util.Effect("AR2Impact", visual )
-	end
+	-- weapon.callBack = function( ply, tr, dmgInfo )  
+	-- 	local visual = EffectData()
+	-- 	visual:SetOrigin( tr.HitPos )
+	-- 	util.Effect("AR2Impact", visual )
+	-- end
 
 	if CLIENT then
 		function weapon.paperDoll(ply, prop)
@@ -38,3 +38,7 @@ end
 classItemData.register( class, generate )
 
 -- EXAMPLE OF A CUSTOM WEAPON
+
+if SERVER then
+	classScarcity.addItemToCategory(2, class)
+end

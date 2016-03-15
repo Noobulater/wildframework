@@ -1,0 +1,8 @@
+"wildframework"
+{
+	"base"		"base"
+	"title"		"Wild Framework"
+	"maps"        "wild_"
+	"menusystem"	"1"
+}
+

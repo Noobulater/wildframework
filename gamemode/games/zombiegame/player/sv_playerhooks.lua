@@ -16,5 +16,39 @@ end
 
 local function defaultGun(ply, char)
 	char.getInventory().addItem(classItemData.genItem("glock18"))
+	char.getInventory().addItem(classItemData.genItem("detonator"))
+	char.getInventory().addItem(classItemData.genItem("knife"))
 end
 hook.Add("CharacterCreated", "defaultGun", defaultGun)
+
+function spillInventory(plyVictim, plyAttacker, dmginfo)
+	if util.isActivePlayer(plyVictim) && getGame().getStage() > 1 then
+		local inventory = plyVictim:getInventory()
+
+		if !inventory then return end 
+
+		for slot, itemData in pairs(inventory.getItems()) do
+			if itemData != 0 then
+				if itemData.getTemporary() then
+					inventory.dropItem(slot)
+				else
+					local item = table.Copy(itemData)
+					item.setTemporary(true)
+					item.drop(plyVictim)
+				end
+			end
+		end
+	end
+end
+hook.Add("DoPlayerDeath", "spillInventory", spillInventory)
+
+function initialSpawnHook(ply)
+	-- Set to a random model for now this works.
+	timer.Simple(3, function()
+		if IsValid(ply) then
+			networkGame( getGame().getClass(), ply )
+			networkGameStage( getGame().getStage(), ply)
+		end
+	end)
+end
+hook.Add("PlayerInitialSpawn", "initialSpawnHook", initialSpawnHook)

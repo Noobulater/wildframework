@@ -5,7 +5,7 @@ local function generate()
 	item.setClass(class)
 	item.setName("Pistol Ammo")
 	item.setDescription("Generic Pistol Ammo")
-	item.setModel("models/items/boxsrounds.mdl")
+	item.setModel("models/items/boxprounds.mdl")
 	item.setReusable(true)
 	item.setExtras( "120" ) -- Default holds 8 rounds
 	if CLIENT then

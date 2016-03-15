@@ -8,7 +8,7 @@ local function generate()
 	weapon.setFireSound("weapons/mac10/mac10-1.wav")	
 	weapon.setFireRate( .08 )
 	weapon.setAutomatic(true)
-	weapon.setDamage(19)
+	weapon.setDamage(12)
 	weapon.setAccuracy(.03)
 	weapon.setClipSize(36)
 	weapon.setModel("models/weapons/w_smg_mac10.mdl")
@@ -19,3 +19,7 @@ end
 classItemData.register( class, generate )
 
 -- EXAMPLE OF A CUSTOM WEAPON
+
+if SERVER then
+	classScarcity.addItemToCategory(2, class)
+end

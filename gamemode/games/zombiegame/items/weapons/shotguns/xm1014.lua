@@ -7,7 +7,7 @@ local function generate()
 	weapon.setDescription("I double-tapped, on accident")
 	weapon.setFireSound("weapons/xm1014/xm1014-1.wav")	
 	weapon.setFireRate( .25 )
-	weapon.setDamage(10)
+	weapon.setDamage(14)
 	weapon.setAccuracy(.1)
 	weapon.setClipSize(7)
 	weapon.setNumBullets(6)
@@ -22,3 +22,6 @@ end
 classItemData.register( class, generate )
 
 -- EXAMPLE OF A CUSTOM WEAPON
+if SERVER then
+	classScarcity.addItemToCategory(2, class)
+end

@@ -9,7 +9,7 @@ function classLighting.new()
 
 	if !entity then print("This map doesn't support Day/Night cylces") return false end -- the map doesn't support day/night
 
-	local brightness = 1
+	local brightness = 1 
 	local lastbrightness = 1
 
 	function public.setEntity(newEntity)
@@ -30,7 +30,7 @@ function classLighting.new()
 	end
 
 	function public.getBrightness()
-		return brightness
+		return brightness 
 	end
 
 	function public.darken()
@@ -48,5 +48,5 @@ function classLighting.new()
 		lastbrightness = brightness
 	end
 
-	return public
+	return public 
 end

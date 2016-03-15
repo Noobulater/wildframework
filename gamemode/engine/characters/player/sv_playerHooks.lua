@@ -17,7 +17,7 @@ function GM:PlayerInitialSpawn(ply)
 	-- Set to a random model for now this works.
 	GAMEMODE:PlayerSetModel(ply)
 	GAMEMODE:SetPlayerSpeed( ply, GAMEMODE.WalkSpeed, GAMEMODE.RunSpeed )
-	timer.Simple(4, function() if IsValid(ply) then ply:setupData() ply:Load() if table.Count(ply:getCharacters()) < 2 then ply:ConCommand("openCharacterCreation") end end end )
+	timer.Simple(4, function() if IsValid(ply) then ply:setupData() ply:Load() ply:loadCharacter() if table.Count(ply:getCharacters()) < 2 then ply:ConCommand("openCharacterCreation") end end end )
 	timer.Simple(3, function() if IsValid(ply) then forceWorldUpdate(ply) end end)
 end
 
@@ -46,6 +46,7 @@ end
 function GM:DoPlayerDeath(plyVictim, plyAttacker, dmginfo)
 	plyVictim.nextSpawn = CurTime() + 3
 	plyVictim:CreateRagdoll()
+	getPaperdollManager().clear( plyVictim )
 	-- ToDo: Attach the paper doll to the rag doll.
 end
 

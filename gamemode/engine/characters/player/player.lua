@@ -32,6 +32,10 @@ function PMETA:getInventory()
 	return self:getCharacter().getInventory()
 end
 
+function PMETA:giveItem( itemClass )
+	self:getInventory().addItem(classItemData.genItem(itemClass))
+end
+
 function PMETA:Save()
 	local saveString = self:getData().toString()
 

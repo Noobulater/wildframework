@@ -1,11 +1,5 @@
 if SERVER then
 
-function showGoals( ply )
-	ply:ConCommand( "showGoals" )
-end
-hook.Add("ShowSpare1", "showGoals", showGoals)
-
-
 concommand.Add("claimPrize", function(ply,cmd,args) 
 	local goalName = args[1] 
 	local prize = args[2] 
@@ -62,37 +56,38 @@ surface.CreateFont( "zgGoalTitle", {
  outline = false
 } )
 
+surface.CreateFont( "zgRewardText", {
+ font = "UIBold",
+ size = 12,
+ weight = 200,
+ blursize = 0,
+ scanlines = 0,
+ antialias = true,
+ underline = false,
+ italic = false,
+ strikeout = false,
+ symbol = false,
+ rotary = false,
+ shadow = false,
+ additive = false,
+ outline = true
+} )
+
 
 local goalsMenu 
 
-function openGoalsMenu()
+function openGoalsMenu(parentPanel)
 	if !getGoalManager() then return end
 	local goals = getGoalManager().getGoals()
 	local numGoals = (table.Count(goals) or 0)
 
-	if IsValid(goalsMenu) then
-		goalsMenu:Remove()
-	end
-
-	goalsMenu = vgui.Create("DFrame")
-	goalsMenu:SetTitle("Goals")
-	goalsMenu:SetSize(ScrW()/2, 40 + ScrH()/6 * numGoals )
-	goalsMenu:Center()
-	goalsMenu:MakePopup()
-
-	local goalsPanel = vgui.Create("DPanel", goalsMenu)
-	local parent = goalsPanel:GetParent()
-
-	goalsPanel:SetSize(parent:GetWide() - 40, parent:GetTall() - 60)
-	goalsPanel:SetPos(20, 40)
-
 	local yPos = 0 
 	local xPos = 5
 	for key, data in pairs(goals) do
-		
-		local goalPanel = vgui.Create("DPanel", goalsPanel)
+		local goalPanel = vgui.Create("DPanel", parentPanel)
 		local parent = goalPanel:GetParent()
-		goalPanel:SetSize(parent:GetWide(), parent:GetTall() / numGoals)
+
+		goalPanel:SetSize(parent:GetWide(), math.Clamp(parent:GetTall() / numGoals, 50, 75))
 		goalPanel:SetPos(0, yPos)
 
 		local title = vgui.Create("DLabel", goalPanel)
@@ -119,56 +114,59 @@ function openGoalsMenu()
 
 		xPos = 5	
 
-		for index, prize in pairs(data.getPrizes()) do
-			if prize != nil then
-				local item = classItemData.genItem(prize)
+		if data.getPrizes() then
+			for index, prize in pairs(data.getPrizes()) do
+				if prize != nil then
+					local item = classItemData.genItem(prize)
 
-				local background = vgui.Create("DPanel", goalPanel)
-				local parent = background:GetParent()
+					local background = vgui.Create("DPanel", goalPanel)
+					local parent = background:GetParent()
 
-				background:SetSize(parent:GetTall() - 10, parent:GetTall() - 10)
-				background:SetPos(parent:GetWide() - background:GetWide() - 5 - xPos,5)
-				background.Paint = function()
-						surface.SetDrawColor( 0, 0, 0, 255)
-						surface.DrawRect( 0, 0, background:GetWide(), background:GetTall())
-						if background.color then
-							surface.SetDrawColor( background.color.r, background.color.g,  background.color.b,  background.color.a )
-							surface.DrawOutlinedRect(2, 2, background:GetWide() - 4, background:GetTall() - 4)
-						end
-				end
+					background:SetSize(parent:GetTall() - 10, parent:GetTall() - 10)
+					background:SetPos(parent:GetWide() - background:GetWide() - 5 - xPos,5)
+					background.Paint = function()
+							-- surface.SetDrawColor( 0, 0, 0, 255)
+							-- surface.DrawRect( 0, 0, background:GetWide(), background:GetTall())
+							if background.color then
+								surface.SetDrawColor( background.color.r, background.color.g,  background.color.b,  background.color.a )
+								surface.DrawOutlinedRect(2, 2, background:GetWide() - 4, background:GetTall() - 4)
+							end
+					end
 
-				local mdl = vgui.Create("DModelPanel", background)
-				local parent = mdl:GetParent()
-				mdl:SetSize(parent:GetWide(), parent:GetTall())
-				mdl:SetPos(0,0)
-				util.DModelPanelCenter(mdl, item.getModel())
-				function mdl:PaintOver()
-					for index, ply in pairs(data.getWinners() or {}) do
-						if ply == LocalPlayer() then 
-							paintText("Click To Claim", "wildChatText", mdl:GetWide()/2, mdl:GetTall()/2, nil, true, true)
+					local mdl = vgui.Create("DModelPanel", background)
+					local parent = mdl:GetParent()
+					mdl:SetSize(parent:GetWide(), parent:GetTall())
+					mdl:SetPos(0,0)
+					util.DModelPanelCenter(mdl, item.getModel())
+					function mdl:PaintOver()
+						paintText(item.getName(), "zgRewardText", self:GetWide()/2, self:GetTall()/2, Color(255,255,255,255), true, true)
+						for index, ply in pairs(data.getWinners() or {}) do
+							if ply == LocalPlayer() then 
+								paintText("Click To Claim", "zgRewardText", mdl:GetWide()/2, 20, nil, true, true)
+							end
 						end
 					end
-				end
 
-				mdl.DoClick = function() 
-					for index, ply in pairs(data.getWinners() or {}) do
-						if ply == LocalPlayer() then 
-							 	local dMenu = DermaMenu()
-						 		dMenu:AddOption("Claim Prize", function() 
-							 		RunConsoleCommand("claimPrize", data.getClass(), prize) 
-							 		if !data.claimed then
-							 			background.color = Color(0,255,0,255) 
-							 		end
-							 	data.claimed = true
-						 	end)
-						 	dMenu:Open()
-						 	dMenu.Think = function() if !IsValid(goalsMenu) then dMenu:Remove() end end
-							return
+					mdl.DoClick = function() 
+						for index, ply in pairs(data.getWinners() or {}) do
+							if ply == LocalPlayer() then 
+								 	local dMenu = DermaMenu()
+							 		dMenu:AddOption("Claim Prize", function() 
+								 		RunConsoleCommand("claimPrize", data.getClass(), prize) 
+								 		if !data.claimed then
+								 			background.color = Color(0,255,0,255) 
+								 		end
+								 	data.claimed = true
+							 	end)
+							 	dMenu:Open()
+							 	dMenu.Think = function() if !IsValid(goalsMenu) then dMenu:Remove() end end
+								return
+							end
 						end
 					end
-				end
 
-				xPos = xPos + background:GetWide() + 5
+					xPos = xPos + background:GetWide() + 5
+				end
 			end
 		end
 
@@ -187,6 +185,8 @@ function openGoalsMenu()
 		end
 		yPos = yPos + goalPanel:GetTall()
 	end
+
+	return parentPanel
 end
 
 concommand.Add("showGoals", openGoalsMenu)

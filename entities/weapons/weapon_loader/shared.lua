@@ -8,7 +8,7 @@ SWEP.Author			= "Noobulater"
 SWEP.Contact		= ""
 SWEP.Purpose		= ""
 SWEP.Instructions	= ""
-SWEP.PrintName			= "Weapon"	
+SWEP.PrintName			= "Weapon"
 
 SWEP.Primary.ClipSize = 0
 SWEP.Primary.DefaultClip = 0
@@ -38,8 +38,8 @@ function SWEP:LoadWeapon()
 		self:GetOwner():SetNWString("weaponClass", self.weapon.getClass() )
 		self:SetClip1(weapon.primClip or 0)
 		if self:GetDTFloat(1) != -1 then
-			self:SetDTFloat(1, -1)	
-		end		
+			self:SetDTFloat(1, -1)
+		end
 	end
 	self.WorldModel	= weapon.getModel()
 	self:SetWeaponHoldType(weapon.getHoldType())
@@ -77,7 +77,7 @@ end
 function SWEP:PrimaryAttack()
 	local weapon = self.weapon
 	if !self:CanPrimaryAttack() then return false end
-	if self:GetDTFloat(0) != -1 && self.nextPFire then if SERVER then self:SetDTFloat(0, -1) end end	
+	if self:GetDTFloat(0) != -1 && self.nextPFire then if SERVER then self:SetDTFloat(0, -1) end end
 
 	self.nextPFire = CurTime() + weapon.getFireRate()
 
@@ -106,22 +106,20 @@ function SWEP:PrimaryAttack()
 
 							if weapon.callBack then
 								weapon.callBack()
-							end		
+							end
 						end
 		self.Owner:FireBullets(bData)
 
 		self.Owner:LagCompensation( false )
 
 		self.Owner:SetAnimation( PLAYER_ATTACK1 )
-		self.Owner:MuzzleFlash() 
+		self.Owner:MuzzleFlash()
 
 		if SERVER then
 			sound.Play( weapon.getFireSound(), self:GetOwner():GetPos() + Vector(0,0,30), 75, 100, 1 )
 		end
 
 		self:SetClip1(math.Clamp(self:Clip1() - 1, 0, weapon.getClipSize() or 10))
-
-		self.Owner:FireBullets(bullet)
 
 	end
 
@@ -138,7 +136,7 @@ function SWEP:CanSecondaryAttack()
 end
 
 function SWEP:SecondaryAttack()
-	if !self:CheckReload() then return false end	
+	if !self:CheckReload() then return false end
 
 	return true
 end
@@ -150,9 +148,9 @@ end
 function SWEP:CheckReload()
 	local weapon = self.weapon
 	if self:GetDTFloat(0) != -1 && (self:GetDTFloat(0) < CurTime()) then
-		if weapon == nil then return false end	
+		if weapon == nil then return false end
 		self:SetDTFloat(0, -1)
-		weapon.reload( self.Owner , self )		
+		weapon.reload( self.Owner , self )
 		return true
 	end
 	return false
@@ -162,16 +160,16 @@ function SWEP:Reload()
 	local weapon = self.weapon
 	if weapon == nil then return false end
 	if self:GetDTFloat(0) != -1 then return false end
-	if self:Clip1() == self:GetWeapon().getClipSize() then return false end	
+	if self:Clip1() == self:GetWeapon().getClipSize() then return false end
 	self:SetDTFloat( 0, CurTime() + (weapon.getReloadTime() or 2) )
 	self.Owner:SetAnimation( PLAYER_RELOAD )
 end
 
-function SWEP:OnRestore()	
+function SWEP:OnRestore()
 end
 
 function SWEP:GetAimFactor()
-	local weapon = self.weapon	
+	local weapon = self.weapon
 	if weapon == nil then return 1 end
 
 	local aimTime = self:GetDTFloat(1)
@@ -192,14 +190,14 @@ function SWEP:Think()
 				end
 			else
 				if self:GetDTFloat(1) != -1 then
-					self:SetDTFloat(1, -1)	
-				end				
+					self:SetDTFloat(1, -1)
+				end
 			end
 		else
 			if self:GetDTFloat(1) != -1 then
-				self:SetDTFloat(1, -1)	
+				self:SetDTFloat(1, -1)
 			end
-		end	
+		end
 	end
 	self:CheckReload()
 end
@@ -241,7 +239,7 @@ local lastFov = 0
 function SWEP:CalcView( ply, pos, ang, fov )
 	if LocalPlayer():GetVelocity():Length() == 0 then
 		local aimTime = self:GetDTFloat(1)
-		if aimTime != nil && aimTime != -1 then 
+		if aimTime != nil && aimTime != -1 then
 			fov = fov - math.Clamp(50 * (1-self:GetAimFactor()),0,50)
 
 		end
@@ -269,7 +267,7 @@ local function paperDoll()
 				local prop = ply.weaponModel
 				if ply.weapon == nil or ply.weapon.getClass() != weaponClass then
 					ply.weapon = classItemData.genItem(weaponClass)
-				end			
+				end
 				if ply.weapon != nil then
 					if ply:GetActiveWeapon().SetWeaponHoldType != nil then
 						ply:GetActiveWeapon():SetWeaponHoldType(ply.weapon.getHoldType())
@@ -285,7 +283,7 @@ local function paperDoll()
 		else
 			if IsValid(ply.weaponModel) then
 				ply.weaponModel:Remove()
-			end			
+			end
 		end
 	end
 end

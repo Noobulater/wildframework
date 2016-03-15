@@ -8,7 +8,7 @@ local function generate()
 	weapon.setFireSound("weapons/mp5navy/mp5-1.wav")	
 	weapon.setFireRate( .08 )
 	weapon.setAutomatic(true)
-	weapon.setDamage(20)
+	weapon.setDamage(13)
 	weapon.setAccuracy(.03)
 	weapon.setClipSize(32)
 	weapon.setModel("models/weapons/w_smg_mp5.mdl")
@@ -30,3 +30,6 @@ end
 classItemData.register( class, generate )
 
 -- EXAMPLE OF A CUSTOM WEAPON
+if SERVER then
+	classScarcity.addItemToCategory(3, class)
+end

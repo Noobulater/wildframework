@@ -22,7 +22,8 @@ function classGoal.new()
 	local tracking = true
 	local winners
 	local prizes
-
+	local prizeModifier
+	
 	function public.setClass( newClass )
 		class = newClass
 	end
@@ -79,6 +80,14 @@ function classGoal.new()
 	
 	function public.getPrizes()
 		return prizes
+	end
+
+	function public.setPrizeModifier( newPrizeModifier ) 
+		prizeModifier = newPrizeModifier
+	end
+
+	function public.getPrizeModifier()
+		return prizeModifier
 	end
 
 	function public.initialize()

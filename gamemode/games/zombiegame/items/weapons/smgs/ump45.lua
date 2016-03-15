@@ -8,7 +8,7 @@ local function generate()
 	weapon.setFireSound("weapons/ump45/ump45-1.wav")	
 	weapon.setFireRate( .05 )
 	weapon.setAutomatic(true)
-	weapon.setDamage(20)
+	weapon.setDamage(14)
 	weapon.setAccuracy(.09)
 	weapon.setClipSize(25)
 	weapon.setModel("models/weapons/w_smg_ump45.mdl")
@@ -30,3 +30,6 @@ end
 classItemData.register( class, generate )
 
 -- EXAMPLE OF A CUSTOM WEAPON
+if SERVER then
+	classScarcity.addItemToCategory(2, class)
+end

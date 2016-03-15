@@ -16,7 +16,7 @@ local function findBlockingLOS( hideTable )
 	traceData.endpos = LocalPlayer():GetPos() + Vector(0,0,5)
 	traceData.mins, traceData.maxs = LocalPlayer():GetCollisionBounds()
 	traceData.filter = hideTable
-	traceData.mask = MASK_SOLID
+	traceData.mask = MASK_SOLID 
 	local trace = util.TraceHull(traceData)
 	if trace.HitNonWorld then
 		if trace.Entity then
@@ -36,10 +36,10 @@ local function checkLOS()
 	end
 end
 
-local function refreshBrushes()
+local function refreshBrushes() 
 	for _, ent in pairs( ents.FindByClass("func_brush") ) do
 		ent:SetRenderMode(RENDERMODE_TRANSALPHA)
-		ent:SetColor(Color(255,255,255,255))
+		ent:SetColor(Color(255,255,255,255))	
 	end
 	timer.Simple(1, function() refreshBrushes()  end)
 end
@@ -59,9 +59,9 @@ function GM:CalcView( ply, pos, ang, fov )
 
 	for _, ent in pairs( ents.FindByClass("prop_*") ) do
 		ent:SetRenderMode(RENDERMODE_TRANSALPHA)
-		prepareEntAlpha(ent)
+		prepareEntAlpha(ent)	
 	end
-
+	
 	cameraPos = pos + cameraAngle:Forward() * -1 * cameraDistance + GAMEMODE.CamOffset
 
 	checkLOS()
@@ -76,7 +76,7 @@ function GM:CalcView( ply, pos, ang, fov )
 end
 concommand.Add("tfps", function() if !LocalPlayer():IsAdmin() then return false end gui.EnableScreenClicker(devFirstPerson) devFirstPerson = !devFirstPerson end)
 
-function GM:ShouldDrawLocalPlayer()
+function GM:ShouldDrawLocalPlayer() 
 	return !devFirstPerson
 end
 
@@ -86,10 +86,10 @@ function GM:CreateMove( cmd )
 
 	local ply = LocalPlayer()
 
-	if !ply:Alive() or !vgui.GetWorldPanel().isMouseInside() then
+	if !ply:Alive() or !vgui.GetWorldPanel().isMouseInside() then 
 		cmd:SetForwardMove(0)
 		cmd:SetSideMove(0)
-		return
+		return 
 	end
 
 	local x, y = gui.MousePos( )
@@ -99,7 +99,7 @@ function GM:CreateMove( cmd )
 	local traceData = {}
 	traceData.start = cameraPos
 	traceData.endpos = cameraPos + aimPos * 100000
-	local filterTable = ents.FindByClass("prop_physics")
+	local filterTable = ents.FindByClass("prop_physics") 
 	table.insert(filterTable, ply)
 	traceData.filter = filterTable
 
@@ -114,7 +114,7 @@ function GM:CreateMove( cmd )
 	local viewAngle = (trace.HitPos - shootPos):Angle()
 
 	if !input.IsKeyDown(KEY_LALT) && trace.Entity != nil && (trace.Entity:IsNPC() or trace.Entity:IsPlayer())  then
-		local bone = trace.Entity:LookupBone("ValveBiped.Bip01_Spine2") or 0
+		local bone = trace.Entity:LookupBone("ValveBiped.Bip01_Spine2") or 0 
 		local pos = trace.Entity:GetBonePosition( bone )
 
 		viewAngle = (pos - shootPos):Angle()
@@ -137,28 +137,28 @@ function GM:CreateMove( cmd )
 	local x1 = math.floor(math.cos(math.rad(angModifier + 90)) * 100) / 100
 	local y1 = math.floor(math.sin(math.rad(angModifier + 90)) * 100) / 100
 
-	local vsideMove = 0
-	local vforwardMove = 0
+	local vsideMove = 0 
+	local vforwardMove = 0 
 
-	local hsideMove = 0
-	local hforwardMove = 0
+	local hsideMove = 0 
+	local hforwardMove = 0 
 
 	if ply:KeyDown(IN_FORWARD) then
 		vsideMove = GAMEMODE.RunSpeed
-		vforwardMove = GAMEMODE.RunSpeed
+		vforwardMove = GAMEMODE.RunSpeed 
 	end
 	if ply:KeyDown(IN_BACK) then
 		vsideMove = -GAMEMODE.RunSpeed
-		vforwardMove = -GAMEMODE.RunSpeed
+		vforwardMove = -GAMEMODE.RunSpeed 
 	end
 
 	if ply:KeyDown(IN_MOVERIGHT) then
 		hsideMove = GAMEMODE.RunSpeed
-		hforwardMove = GAMEMODE.RunSpeed
+		hforwardMove = GAMEMODE.RunSpeed 
 	end
 	if ply:KeyDown(IN_MOVELEFT) then
 		hsideMove = -GAMEMODE.RunSpeed
-		hforwardMove = -GAMEMODE.RunSpeed
+		hforwardMove = -GAMEMODE.RunSpeed 
 	end
 
 	cmd:SetForwardMove(vforwardMove * x + hforwardMove * x1)
@@ -169,7 +169,7 @@ function GM:GUIMousePressed(input)
 	if GAMEMODE.ShowScoreboard then return end
 	if input == MOUSE_LEFT then LocalPlayer():ConCommand("+attack") if getHotBar() && getHotBar():isVisible() then getHotBar():BindPress(LocalPlayer(), "+attack", true) end end
 	if input == MOUSE_RIGHT then LocalPlayer():ConCommand("+attack2") if getHotBar() then getHotBar():BindPress(LocalPlayer(), "+attack2", true) end end
-	if input == MOUSE_MIDDLE then LocalPlayer():ConCommand("+voicerecord") end
+	if input == MOUSE_MIDDLE then LocalPlayer():ConCommand("+voicerecord") end	
 end
 function GM:GUIMouseReleased(input)
 	if GAMEMODE.ShowScoreboard then return end

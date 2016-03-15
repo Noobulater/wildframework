@@ -72,7 +72,7 @@ function PMETA:selectCharacter( charNum )
 	self:loadCharacter()
 end
 if SERVER then
-	concommand.Add("selectCharacter", function(ply,cmd,args) print("here") ply:selectCharacter(math.Round(args[1])) end)
+	concommand.Add("selectCharacter", function(ply,cmd,args) ply:selectCharacter(math.Round(args[1])) end)
 end
 
 function PMETA:loadCharacter()

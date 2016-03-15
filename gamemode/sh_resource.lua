@@ -13,7 +13,6 @@ function print(x, y)
 end
 
 strRootPath = string.Replace(GM.Folder, "gamemodes/", "")
-timer.Simple(1, function() print("SH_RESOURCE.lua line 16 : make sure all your directories are lowercase") end)
 
 function SearchPaths(originalPath, initial)
 	initial = initial or false
@@ -35,21 +34,21 @@ function SearchPaths(originalPath, initial)
 					-- print("AddCSLuaFile('"..correctedPath.."')")
 				else
 					include(correctedPath)
-					-- print("include('"..correctedPath.."')")
+					-- print("include('"..correctedPath.."')")		
 				end
 			else
 				if SERVER then
-					AddCSLuaFile(correctedPath)
+					AddCSLuaFile(correctedPath)					
 					include(correctedPath)
 				   	-- print("AddCSLuaFile('"..correctedPath.."')")
 				else
-					include(correctedPath)
+					include(correctedPath)		
 					-- print("include('"..correctedPath.."')")
 				end
 			end
 		end
 	end
-
+	
 	for _, strPath in pairs(directories) do
 		SearchPaths(originalPath .. strPath)
 	end

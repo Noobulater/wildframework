@@ -41,6 +41,7 @@ function classWeaponData.new( refOwner )
 	local wClass = "weapon_loader" -- ONLY SET THIS IF YOU AREN'T USING A CUSTOM WEAPON
 
 --- All the variables, The methods are at the bottem becasue there is afuckton of them.
+	local shouldDraw = true
 	local fireSound
 	local ammoType
 	local altAmmoType
@@ -54,33 +55,16 @@ function classWeaponData.new( refOwner )
 	local automatic
 	local tracerName = "Tracer"
 	local dualWield
+	local physicsOverride
 -------------------------------------------------------------------------
 -------------------------------------------------------------------------
+	function public.deploy( user )
 
-	-- function public.deploy( user )
-	-- 	for index, slot in pairs(public.getEQSlots()) do
-	-- 		if user:getInventory().getSlot(slot) == public then
-	-- 			weaponSlot = slot
-	-- 			break
-	-- 		end
-	-- 	end
-	-- 	if weaponSlot then
-	-- 		user:Give(wClass)
+	end
 
-	-- 		user:SelectWeapon(wClass)
+	function public.holster( user )
 
-	-- 		if !custom then	return false end 
-
-	-- 		local wep = user:GetActiveWeapon()
-	-- 		if !IsValid(wep) or wep:GetClass() != "weapon_loader" then print("Weapon: Player doesn't have weapon loader") return false end
-
-	-- 		local weaponSlot = nil
-
-	-- 		wep:SetWeapon(public)
-			
-	-- 		updateActiveWeapon(weaponSlot, user)
-	-- 	end
-	-- end
+	end
 
 	function public.equip( user )
 		if SERVER then
@@ -124,11 +108,14 @@ function classWeaponData.new( refOwner )
 
 				if !IsValid(wep) or wep:GetClass() != "weapon_loader" then print("Weapon: Player doesn't have weapon loader") return false end
 
+				public.holster( user )
+
 				public.primClip = wep:Clip1() or 0 
 
-				if wep:GetWeapon() != nil && wep:GetWeapon().getClass() == public.getClass() then
-					user:StripWeapon(public.getWClass())
-					user:SetNWString("weaponClass", "")
+				if wep:GetWeapon() != nil then
+					if wep:GetWeapon().getClass() == public.getClass() then
+						user:StripWeapon(public.getWClass())
+					end
 				end
 			end
 		end
@@ -145,6 +132,14 @@ function classWeaponData.new( refOwner )
 
 	function public.primaryFire( user , swep )
 		return true -- continues to shoot boolets
+	end
+
+	function public.secondaryFire( user , swep )
+		return true -- continues to shoot boolets
+	end
+
+	function public.think( user , swep )
+		return true -- contines the think hook
 	end
 
 	function public.reload( user , swep )
@@ -166,22 +161,36 @@ function classWeaponData.new( refOwner )
 		-- This is used when the weapon is fired
 	end
 
+	if CLIENT then
+		function public.calcView( swep, ply, pos, ang, fov )
+			local view = {} -- we only really care about FOV
+			view.origin = pos
+			view.angles = ang
+			view.fov = fov
+
+			return view
+		end 
+	end
+
 -------------------------------------------------------------------------
 -------------------------------------------------------------------------
 
-	function public.paperDoll(ply, prop)
-		local BoneIndx = ply:LookupBone("ValveBiped.Bip01_R_Hand")
-		local BonePos , BoneAng = ply:GetBonePosition( BoneIndx )
-
-		prop:SetPos(BonePos)
-		prop:SetAngles(BoneAng + Angle(0,0,180))
-		prop:SetModel(public.getModel())
+	function public.paperDoll( player )
+		-- return stuff
 	end
 
 -------------------------------------------------------------------------
 
+	function public.setShouldDraw( newShouldDraw )
+		shouldDraw = newShouldDraw
+	end
+
+	function public.shouldDraw( )
+		return shouldDraw
+	end
+
 	function public.setFireSound( newFireSound )
-		fireSound = Sound(newFireSound) or newFireSound
+		fireSound = newFireSound
 	end
 
 	function public.getFireSound( )

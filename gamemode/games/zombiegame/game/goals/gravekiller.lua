@@ -27,7 +27,6 @@ local function generate()
 		function goal.npcDeath( victim, killer, weapon )
 			if IsValid(killer) && string.lower(victim:GetClass()) == "snpc_gravedigger" then
 				if killer:IsPlayer() then
-					print("Added")
 					killer.gravesDestroyed = (killer.gravesDestroyed or 0) + 2
 				end
 			end

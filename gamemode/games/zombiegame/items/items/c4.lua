@@ -9,6 +9,11 @@ local function generate()
 	item.setDescription("Requires a Detonator to use")
 	item.setModel("models/weapons/w_c4_planted.mdl")
 	item.setPrimaryEQSlot(-3)
+
+	function item.isWeapon()
+		return false
+	end	
+
 	return item
 end
 

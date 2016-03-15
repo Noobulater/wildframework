@@ -7,19 +7,22 @@ local function generate()
 	effect.setThinkSpeed( 5 )
 
 	effect.applyEffect = function( victim )
-		if !victim:IsPlayer() then print("Slow: This effect can't be applied to anything but a player") return end 
-		GAMEMODE:SetPlayerSpeed( victim , 100, 100 )
+		if victim:IsNPC() then if SERVER then victim:setRunning(0) end return end
+		if !victim:IsPlayer() then print("Cripple: This effect can't be applied to anything but a player") return end
+		if SERVER then
+			victim:addSpeedModifier(-80, -150)
+		end
 	end
 
-	effect.sustainEffect = function( victim ) GAMEMODE:SetPlayerSpeed( victim , 100, 100 ) end
+	effect.sustainEffect = function( victim ) end
 	effect.endEffect = function( victim ) effect.cleanUp( victim ) end
 
 	effect.cleanUp = function( victim )
 		if !victim:IsPlayer() then return end 
 		-- Restores the player to normal status
-		if victim:hasEffect("slow") then return end
-		if victim:hasEffect("snare") then return end
-		GAMEMODE:SetPlayerSpeed( victim, GAMEMODE.WalkSpeed, GAMEMODE.RunSpeed )
+		if SERVER then
+			victim:addSpeedModifier(80, 150)
+		end
 	end
 
 	if CLIENT then 

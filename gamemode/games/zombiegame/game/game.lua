@@ -41,6 +41,16 @@ function classGame.new()
 	local goalManager
 	local director 
 
+	local class = "noclass"
+
+	function public.setClass(newClass)
+		class = newClass
+	end
+
+	function public.getClass()
+		return class
+	end
+
 	function public.setDirector(newDirector)
 		director = newDirector
 	end
@@ -82,9 +92,13 @@ function classGame.new()
 	end
 
 	function public.initialize() -- run when the game is created, good for initializing variables
+
+		local mapList
+
 		local mode = public.getMode(stage)
 		if mode != nil then
 			mode.initialize()
+			mode.setStartTime(CurTime())
 		end
 	end
 

@@ -37,10 +37,9 @@ local function timerPaint()
 
 		local text = string.ToMinutesSeconds(timeLeft)
 
-		local width, height = getTextSize(text, "zgTimerText") 
+		local width, height = getTextSize(text, "zgTimerText")
 		height = height + 5
 		width = ScrW() * (1/3)
-
 
 		surface.SetDrawColor(0,0,0,255)
 

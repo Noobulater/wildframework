@@ -2,6 +2,7 @@ classMainMenu = {}
 classMainMenu.SCREENS = {}
 
 function classMainMenu.new()
+
 	local public = vgui.Create("DFrame")
 	public:SetSize( ScrW(), ScrH() )
 	public:SetTitle("")

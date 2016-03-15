@@ -1,5 +1,31 @@
 -- This class holds values in a way that you can
 -- hook a function to when the value changes.
+if SERVER then
+	util.AddNetworkString( "networkStat" )
+
+	function networkStat( ply, charNum, statName, statValue )
+		ply = ply or player.GetAll()
+
+		net.Start( "networkStat" )
+			net.WriteUInt( charNum, 6 )	
+			net.WriteString(statName)
+			net.WriteString(statValue)
+		net.Send( ply )	
+	end
+end
+
+if CLIENT then
+	net.Receive( "networkStat", function(len)   
+		local charNum = net.ReadUInt( 6 )
+		local char = LocalPlayer():getCharacter(charNum)
+		local stats = char.getStats()
+
+		local statName = net.ReadString()
+		local statValue = net.ReadString()
+
+		stats.setStatValue(statName, statValue)
+	end)
+end
 classStats = {}
 
 function classStats.new(refOwner)
@@ -72,5 +98,10 @@ function classStats.new(refOwner)
 		table.remove(allStats, refStat)
 	end
 	
+	public.setStatValue("strength", 30)
+	public.setStatValue("luck", 30)
+	public.setStatValue("agility", 30)
+	public.setStatValue("fellowship", 30)
+
 	return public 
 end

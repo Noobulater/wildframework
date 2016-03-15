@@ -14,6 +14,18 @@ local lastAng = Angle(0,0,0)
 local lastPos 
 local lookAtPos = Vector(0,0,0)
 
+local lastCameraPos = Vector(0,0,0)
+local lastLookAng = Angle(0,0,0)
+
+local shakeTime = 0
+
+net.Receive( "networkScreenShake", function(len)   
+	local duration = net.ReadFloat()
+	shakeTime = CurTime() + duration
+end)	
+
+
+
 function GM:CalcView( ply, pos, ang, fov )
 	if LocalPlayer():GetObserverMode() != OBS_MODE_NONE then return end
 
@@ -27,8 +39,9 @@ function GM:CalcView( ply, pos, ang, fov )
 	cameraPos = trace.HitPos + trace.HitNormal*2
 
 	local view = {}
-	view.origin = cameraPos 
-	view.angles = cameraAng
+
+	view.origin = Lerp(0.1, cameraPos, lastCameraPos)
+	view.angles = Lerp(0.1, cameraAng, lastLookAng)
 	view.fov = fov
 
 	if IsValid(LocalPlayer():GetActiveWeapon()) then
@@ -36,6 +49,14 @@ function GM:CalcView( ply, pos, ang, fov )
 			view = LocalPlayer():GetActiveWeapon():CalcView( ply, cameraPos, cameraAng, fov )
 		end
 	end
+
+	if shakeTime >= CurTime() then
+		view.origin = view.origin + Vector(math.random(-1,1),math.random(-1,1),math.random(-1,1))
+		view.angles = view.angles + Angle(math.random(-1,1),math.random(-1,1),math.random(-1,1))
+	end
+
+	lastCameraPos = cameraPos
+	lastLookAng = cameraAng
 
     return view
 
@@ -61,8 +82,12 @@ function GM:CreateMove( cmd )
 	local traceData = {}
 	traceData.start = cameraPos
 	traceData.endpos = cameraPos + lastAng:Forward() * 1000000
-	traceData.filter = ply 
-	if !GAMEMODE.FriendlyFire then traceData.filter = player.GetAll() end
+
+	local filterTable = ents.FindByClass("prop_ragdoll") 
+	
+
+	if !GAMEMODE.FriendlyFire then table.insert(filterTable, player.GetAll()) end
+	traceData.filter = filterTable
 	traceData.mask = MASK_SHOT
 
 	local trace = util.TraceLine(traceData)

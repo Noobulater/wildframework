@@ -38,6 +38,7 @@ function classItemData.new( refOwner )
 	local temporary = false
 	local extras = ""
 	local hotBar = false
+	local physicsOverride
 
 	function public.setOwner( newOwner )
 		if !IsValid(newOwner) then print("itemData: not a valid owner") end
@@ -126,7 +127,12 @@ function classItemData.new( refOwner )
 		if SERVER then
 			local entData = classRenderEntry.new()
 			entData.setModel( model )
-			entData.setPos( user:GetShootPos() + user:GetAngles():Forward() * 30 )
+
+			local pos = user:GetPos()
+			if user:IsPlayer() then
+				pos = user:GetShootPos()
+			end
+			entData.setPos( pos + user:GetAngles():Forward() * 30 )
 			entData.setSolidDistance(800)
 			entData.setStatic(false)
 			entData.createHook = function( ent )
@@ -136,6 +142,14 @@ function classItemData.new( refOwner )
 				ent:Spawn()
 				ent:Activate()
 				ent:SetCollisionGroup(COLLISION_GROUP_WEAPON)
+
+				if physicsOverride then
+					local maxs = ent:OBBMaxs()
+					local mins = ent:OBBMins()
+
+					ent:PhysicsInitBox(Vector(maxs.z,0,0),Vector(maxs.z,0,0))
+				end
+
 				local phys = ent:GetPhysicsObject()
 				if IsValid(phys) then
 					phys:Wake()
@@ -149,6 +163,8 @@ function classItemData.new( refOwner )
 			end
 			entData.createEnt()
 			world.data.addEntry(entData)
+
+			return entData
 		end
 	end
 
@@ -165,6 +181,18 @@ function classItemData.new( refOwner )
 		function public.paintOverHook( panel ) 
 			-- This is to be used for drawing over the Icon of the item
 		end
+	end
+
+	function public.setPhysicsOverride( newPhysicsOverride )
+		physicsOverride = newPhysicsOverride
+	end
+
+	function public.getPhysicsOverride()
+		return physicsOverride
+	end
+
+	function public.isItem()
+		return true
 	end
 
 	function public.isEquipment()

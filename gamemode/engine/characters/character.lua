@@ -78,6 +78,11 @@ function classCharacter.new( refOwner )
 		end
 	end
 
+	stats.setStatValue("defaultWalkSpeed", GAMEMODE.WalkSpeed)
+	stats.setStatValue("defaultRunSpeed", GAMEMODE.RunSpeed)
+	stats.setStatValue("walkSpeedModifier", 0)
+	stats.setStatValue("runSpeedModifier", 0)
+
 	return public
 
 end

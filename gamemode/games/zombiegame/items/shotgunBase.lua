@@ -19,7 +19,7 @@ end
 local class = "shotgunBase"
 
 local function generate()
-	local weapon = classWeaponData.new()
+	local weapon = classItemData.genItem("gunBase")
 	weapon.setClass(class)
 	weapon.setName("Shotty Gun")
 	weapon.setDescription("This is an example of a custom weapon")
@@ -74,16 +74,6 @@ local function generate()
 		end
 	end
 
-	if CLIENT then
-		function weapon.paperDoll(ply, prop)
-			local BoneIndx = ply:LookupBone("ValveBiped.Bip01_R_Hand")
-			local BonePos , BoneAng = ply:GetBonePosition( BoneIndx )
-
-			prop:SetAngles(BoneAng + Angle(-8,0,170))
-			prop:SetPos(BonePos + BoneAng:Forward() * 20 + BoneAng:Up() * 2.5 )
-			prop:SetModel(weapon.getModel())
-		end
-	end
 
 	return weapon
 end

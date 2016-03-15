@@ -20,10 +20,7 @@ local function generate()
 		if !victim:IsPlayer() then return end 
 		-- Restores the player to normal status
 		victim:SetJumpPower(160)
-		if victim:hasEffect("slow") then return end
-		if victim:hasEffect("cripple") then return end
-		if victim:hasEffect("snare") then return end
-		GAMEMODE:SetPlayerSpeed( victim, GAMEMODE.WalkSpeed, GAMEMODE.RunSpeed )
+
 	end
 
 	if CLIENT then 

@@ -15,16 +15,16 @@ if CLIENT then
 local Bones = {"none","ValveBiped.Bip01_Head1",
 "ValveBiped.Anim_Attachment_RH","ValveBiped.Bip01_Spine",
 "ValveBiped.Bip01_Spine1","ValveBiped.Bip01_Spine2","ValveBiped.Bip01_Spine3",
-"ValveBiped.Bip01_Spine4", "ValveBiped.Bip01_Pelvis","ValveBiped.Bip01_R_Hand",
+"ValveBiped.Bip01_Spine4", "ValveBiped.Bip01_Pelvis","ValveBiped.Bip01_R_Hand", 
 "ValveBiped.Bip01_R_Forearm", "ValveBiped.Bip01_R_Foot", "ValveBiped.Bip01_R_Thigh",
-"ValveBiped.Bip01_R_Calf", "ValveBiped.Bip01_R_Shoulder", "ValveBiped.Bip01_R_Elbow",
-"ValveBiped.Bip01_L_Hand", "ValveBiped.Bip01_L_Forearm", "ValveBiped.Bip01_L_Foot",
-"ValveBiped.Bip01_L_Thigh", "ValveBiped.Bip01_L_Calf", "ValveBiped.Bip01_L_Shoulder",
+"ValveBiped.Bip01_R_Calf", "ValveBiped.Bip01_R_Shoulder", "ValveBiped.Bip01_R_Elbow", 
+"ValveBiped.Bip01_L_Hand", "ValveBiped.Bip01_L_Forearm", "ValveBiped.Bip01_L_Foot", 
+"ValveBiped.Bip01_L_Thigh", "ValveBiped.Bip01_L_Calf", "ValveBiped.Bip01_L_Shoulder", 
 "ValveBiped.Bip01_L_Elbow",}
 
 local holdTypes = {
-	"ar2",	"camera",	"crossbow",	"duel",	"fist",	"grenade",	"knife",
-	"melee",	"melee2",	"normal",	"passive",	"physgun",
+	"ar2",	"camera",	"crossbow",	"duel",	"fist",	"grenade",	"knife",	
+	"melee",	"melee2",	"normal",	"passive",	"physgun",	
 	"pistol",	"revolver",	"rpg",	"shotgun",	"slam",	"smg",
 }
 
@@ -39,29 +39,18 @@ local tempData = {
 	scale = Vector(1,1,1),
 }
 
-local function openPaperDollEditor()
-	local frame = vgui.Create("DFrame")
-	frame:SetSize(400,700)
-	frame:SetTitle("Item Editor")
-	frame:MakePopup()
-	frame:SetPos( ScrW() - 420, 10 )
+local function openModelTab(parent)
 
-	local propertySheet = vgui.Create("DPropertySheet", frame)
-	local parent = propertySheet:GetParent()
-	propertySheet:SetSize(parent:GetWide() - 20, parent:GetTall() - 35 )
-	propertySheet:SetPos(10, 25)
-
-	local visible = propertySheet:Add("DPanel")
-	propertySheet:AddSheet( "Model", visible, "icon16/user.png" )
-
-	local parent = propertySheet
+	local visible = parent:Add("DPanel")
+	parent:AddSheet( "Model", visible, "icon16/world.png" )
 
 	local yPos = 10
 	local padding = 10
+	local buttonWidth = parent:GetWide() - 40
 
 	local modelName = vgui.Create("DTextEntry", visible)
 	modelName:SetPos(10,yPos)
-	modelName:SetSize((parent:GetWide() - 40)/2 - 10, 20)
+	modelName:SetSize((buttonWidth)/2 - 10, 20)
 	modelName:SetText(tostring(tempData.model))
 	modelName:SetConVar("paperDollModel")
 	function modelName:Think()
@@ -69,8 +58,8 @@ local function openPaperDollEditor()
 	end
 
 	local modelButton = vgui.Create("DButton", visible)
-	modelButton:SetSize((parent:GetWide() - 40)/2 - 10, 20)
-	modelButton:SetPos(parent:GetWide() - 40 - modelButton:GetSize() ,yPos)
+	modelButton:SetSize((buttonWidth)/2 - 10, 20)
+	modelButton:SetPos(buttonWidth - modelButton:GetSize() ,yPos)	
 	modelButton:SetText("Open Model Browser")
 	function modelButton:DoClick()
 		RunConsoleCommand("openModelSelector")
@@ -80,7 +69,7 @@ local function openPaperDollEditor()
 
 	local title = vgui.Create("DLabel", visible)
 	title:SetPos(10,yPos)
-	title:SetSize(parent:GetWide() - 40, 20)
+	title:SetSize(buttonWidth, 20)
 	title:SetText("Vector(x,y,z)")
 	title:SetColor(Color(0,0,0,255))
 
@@ -88,7 +77,7 @@ local function openPaperDollEditor()
 
 	local xSlider = vgui.Create("Slider", visible)
 	xSlider:SetPos(10,yPos)
-	xSlider:SetSize(parent:GetWide() - 40, 20)
+	xSlider:SetSize(buttonWidth, 20)
 	xSlider:SetMin(-100)
 	xSlider:SetMax(100)
 	xSlider:SetDecimals(1)
@@ -97,11 +86,11 @@ local function openPaperDollEditor()
 		tempData.pos.x = math.Round( xSlider:GetValue() )
 	end
 
-	yPos = yPos + xSlider:GetTall() + padding
+	yPos = yPos + xSlider:GetTall() + padding	
 
 	local ySlider = vgui.Create("Slider", visible)
 	ySlider:SetPos(10,yPos)
-	ySlider:SetSize(parent:GetWide() - 40, 20)
+	ySlider:SetSize(buttonWidth, 20)
 	ySlider:SetMin(-100)
 	ySlider:SetMax(100)
 	ySlider:SetDecimals(1)
@@ -110,11 +99,11 @@ local function openPaperDollEditor()
 		tempData.pos.y = math.Round( ySlider:GetValue() )
 	end
 
-	yPos = yPos + ySlider:GetTall() + padding
+	yPos = yPos + ySlider:GetTall() + padding	
 
 	local zSlider = vgui.Create("Slider", visible)
 	zSlider:SetPos(10,yPos)
-	zSlider:SetSize(parent:GetWide() - 40, 20)
+	zSlider:SetSize(buttonWidth, 20)
 	zSlider:SetMin(-100)
 	zSlider:SetMax(100)
 	zSlider:SetDecimals(1)
@@ -123,7 +112,7 @@ local function openPaperDollEditor()
 		tempData.pos.z = math.Round( zSlider:GetValue() )
 	end
 
-	yPos = yPos + zSlider:GetTall() + padding
+	yPos = yPos + zSlider:GetTall() + padding 
 
 	----------
 	--Angles--
@@ -131,7 +120,7 @@ local function openPaperDollEditor()
 
 	local title = vgui.Create("DLabel", visible)
 	title:SetPos(10,yPos)
-	title:SetSize(parent:GetWide() - 40, 20)
+	title:SetSize(buttonWidth, 20)
 	title:SetText("Angle(p,y,r)")
 	title:SetColor(Color(0,0,0,255))
 
@@ -139,7 +128,7 @@ local function openPaperDollEditor()
 
 	local pSlider = vgui.Create("Slider", visible)
 	pSlider:SetPos(10,yPos)
-	pSlider:SetSize(parent:GetWide() - 40, 20)
+	pSlider:SetSize(buttonWidth, 20)
 	pSlider:SetMin(0)
 	pSlider:SetMax(360)
 	pSlider:SetDecimals(1)
@@ -148,11 +137,11 @@ local function openPaperDollEditor()
 		tempData.ang.p = math.Round( pSlider:GetValue() )
 	end
 
-	yPos = yPos + pSlider:GetTall() + padding
+	yPos = yPos + pSlider:GetTall() + padding	
 
 	local ySlider = vgui.Create("Slider", visible)
 	ySlider:SetPos(10,yPos)
-	ySlider:SetSize(parent:GetWide() - 40, 20)
+	ySlider:SetSize(buttonWidth, 20)
 	ySlider:SetMin(0)
 	ySlider:SetMax(360)
 	ySlider:SetDecimals(1)
@@ -161,11 +150,11 @@ local function openPaperDollEditor()
 		tempData.ang.y = math.Round( ySlider:GetValue() )
 	end
 
-	yPos = yPos + ySlider:GetTall() + padding
+	yPos = yPos + ySlider:GetTall() + padding	
 
 	local rSlider = vgui.Create("Slider", visible)
 	rSlider:SetPos(10,yPos)
-	rSlider:SetSize(parent:GetWide() - 40, 20)
+	rSlider:SetSize(buttonWidth, 20)
 	rSlider:SetMin(0)
 	rSlider:SetMax(360)
 	rSlider:SetDecimals(1)
@@ -174,7 +163,7 @@ local function openPaperDollEditor()
 		tempData.ang.r = math.Round( rSlider:GetValue() )
 	end
 
-	yPos = yPos + rSlider:GetTall() + padding
+	yPos = yPos + rSlider:GetTall() + padding		
 
 	----------
 	--Scale--
@@ -182,7 +171,7 @@ local function openPaperDollEditor()
 
 	local title = vgui.Create("DLabel", visible)
 	title:SetPos(10,yPos)
-	title:SetSize(parent:GetWide() - 40, 20)
+	title:SetSize(buttonWidth, 20)
 	title:SetText("Scale(x,y,z)")
 	title:SetColor(Color(0,0,0,255))
 
@@ -190,42 +179,42 @@ local function openPaperDollEditor()
 
 	local xSlider = vgui.Create("Slider", visible)
 	xSlider:SetPos(10,yPos)
-	xSlider:SetSize(parent:GetWide() - 40, 20)
-	xSlider:SetMin(-100)
-	xSlider:SetMax(100)
+	xSlider:SetSize(buttonWidth, 20)
+	xSlider:SetMin(0)
+	xSlider:SetMax(5)
 	xSlider:SetDecimals(1)
 	xSlider:SetValue(1)
 	function xSlider:Think( self, newValue )
 		tempData.scale.x = math.Round( xSlider:GetValue() )
 	end
 
-	yPos = yPos + xSlider:GetTall() + padding
+	yPos = yPos + xSlider:GetTall() + padding	
 
 	local ySlider = vgui.Create("Slider", visible)
 	ySlider:SetPos(10,yPos)
-	ySlider:SetSize(parent:GetWide() - 40, 20)
-	ySlider:SetMin(-100)
-	ySlider:SetMax(100)
+	ySlider:SetSize(buttonWidth, 20)
+	ySlider:SetMin(0)
+	ySlider:SetMax(5)
 	ySlider:SetDecimals(1)
 	ySlider:SetValue(1)
 	function ySlider:Think( self, newValue )
 		tempData.scale.y = math.Round( ySlider:GetValue() )
 	end
 
-	yPos = yPos + ySlider:GetTall() + padding
+	yPos = yPos + ySlider:GetTall() + padding	
 
 	local zSlider = vgui.Create("Slider", visible)
 	zSlider:SetPos(10,yPos)
-	zSlider:SetSize(parent:GetWide() - 40, 20)
-	zSlider:SetMin(-100)
-	zSlider:SetMax(100)
+	zSlider:SetSize(buttonWidth, 20)
+	zSlider:SetMin(0)
+	zSlider:SetMax(5)
 	zSlider:SetDecimals(1)
 	zSlider:SetValue(1)
 	function zSlider:Think( self, newValue )
 		tempData.scale.z = math.Round( zSlider:GetValue() )
 	end
 
-	yPos = yPos + zSlider:GetTall() + padding
+	yPos = yPos + zSlider:GetTall() + padding 
 
 	------------------
 	--Bone Selection--
@@ -235,7 +224,7 @@ local function openPaperDollEditor()
 	boneChoice:SetPos(10,yPos)
 	boneChoice:SetMultiSelect(false)
 	boneChoice:AddColumn("Bone")
-	boneChoice:SetSize(parent:GetWide() - 40, 100)
+	boneChoice:SetSize(buttonWidth, 100)	
 	for index, bone in pairs(Bones) do
 		local line = boneChoice:AddLine(bone)
 		function line:OnSelect()
@@ -253,7 +242,7 @@ local function openPaperDollEditor()
 	holdType:SetPos(10,yPos)
 	holdType:SetMultiSelect(false)
 	holdType:AddColumn("Hold Type")
-	holdType:SetSize(parent:GetWide() - 40, 100)
+	holdType:SetSize(buttonWidth, 100)	
 	for index, hold in pairs(holdTypes) do
 		local line = holdType:AddLine(hold)
 		function line:OnSelect()
@@ -263,6 +252,153 @@ local function openPaperDollEditor()
 
 	yPos = yPos + holdType:GetTall() + padding
 
+end
+
+local function openFileTab(parent)
+	------------------
+	--Saving/Loading--
+	------------------
+
+	local saving = parent:Add("DPanel")
+	parent:AddSheet( "Saving", saving, "icon16/box.png" )
+
+	local yPos = 10
+	local padding = 10
+	local buttonWidth = parent:GetWide() - 40
+	
+	local loadChoice = vgui.Create("DListView", saving)
+	loadChoice:SetPos(10, yPos)
+	loadChoice:SetMultiSelect(false)
+	loadChoice:AddColumn("Files")
+	loadChoice:SetSize(buttonWidth, 170)	
+	loadChoice.update = function() 
+		loadChoice:Clear()
+
+		local files, folders = file.Find( string.lower(string.gsub(GAMEMODE.Name, " ", "")) .. "/items/*", "DATA")
+		for index, name in pairs(files) do
+			local line = loadChoice:AddLine(name)
+			function line:OnSelect()
+				loadChoice.selected = name
+			end
+		end	
+	end
+	loadChoice.update()
+
+	yPos = yPos + loadChoice:GetTall() + padding	
+
+	local loadButton = vgui.Create("DButton", saving)
+	loadButton:SetSize(buttonWidth, 20)
+	loadButton:SetPos(10, yPos)	
+	loadButton:SetText("Load")
+	function loadButton:DoClick()
+		local fileName = string.lower(string.gsub(GAMEMODE.Name, " ", "")) .. "/items/" .. loadChoice.selected
+
+		local parsedString = file.Read(fileName, "DATA")
+		local parsedTable = util.KeyValuesToTable(parsedString)
+		
+		tempData = {
+		model = parsedTable["model"],
+		bone = parsedTable["bone"],
+		color = Color((parsedTable["color"].r) or 255, (parsedTable["color"].g) or 255, (parsedTable["color"].b) or 255, (parsedTable["color"].a) or 255), 
+		skin = tonumber(parsedTable["skin"]),
+		material = parsedTable["material"],
+		pos = util.fromVectorTable(parsedTable["pos"]) or Vector(0,0,0),
+		ang = util.fromAngleTable(parsedTable["ang"]) or Angle(0,0,0),
+		scale = util.fromVectorTable(parsedTable["scale"]) or Vector(0,0,0),
+		}
+	end
+
+	yPos = yPos + loadButton:GetTall() + padding
+
+	local outputButton = vgui.Create("DButton", saving)
+	outputButton:SetSize(buttonWidth, 20)
+	outputButton:SetPos(10, yPos)	
+	outputButton:SetText("Output Code")
+	function outputButton:DoClick()
+
+	end
+
+	yPos = yPos + outputButton:GetTall() + padding	
+
+	local outputButtonS = vgui.Create("DButton", saving)
+	outputButtonS:SetSize(buttonWidth, 20)
+	outputButtonS:SetPos(10, yPos)	
+	outputButtonS:SetText("Output Code ( shorthand )")
+	function outputButtonS:DoClick()
+		
+	end
+
+	yPos = yPos + outputButtonS:GetTall() + padding	
+
+	local itemName = vgui.Create("DTextEntry", saving)
+	itemName:SetPos(10, yPos)
+	itemName:SetSize(buttonWidth, 20)
+	itemName:SetText("<Save Path>")
+
+	yPos = yPos + itemName:GetTall() + padding
+
+	local saveButton = vgui.Create("DButton", saving)
+	saveButton:SetSize(buttonWidth, 20)
+	saveButton:SetPos(10, yPos)
+	saveButton:SetText("Save")
+	function saveButton:DoClick()
+		local fileName = string.lower(string.gsub(GAMEMODE.Name, " ", "")) .. "/items/"
+
+		local saveTable = table.Copy(tempData)
+
+		saveTable["pos"] = util.toVectorTable(saveTable["pos"])
+		saveTable["ang"] = util.toAngleTable(saveTable["ang"])
+		saveTable["scale"] = util.toVectorTable(saveTable["scale"])
+
+		local saveString = util.TableToKeyValues(saveTable)
+
+		file.CreateDir( fileName )
+
+		fileName = fileName .. itemName:GetText() .. ".txt"
+
+		file.Write(fileName, saveString)
+
+		loadChoice.update()
+	end
+
+	yPos = yPos + saveButton:GetTall() + padding
+
+
+	local applyButton = vgui.Create("DButton", saving)
+	applyButton:SetSize(buttonWidth, 20)
+	applyButton:SetPos(10, yPos)
+	applyButton:SetText("Apply")
+	function applyButton:DoClick()
+		local dupeTable = {}
+		dupeTable.pos = Vector(tempData.pos.x, tempData.pos.y, tempData.pos.z)
+		dupeTable.ang = Angle(tempData.ang.p, tempData.ang.y, tempData.ang.r)
+		dupeTable.scale = Vector(tempData.scale.x, tempData.scale.y, tempData.scale.z)
+		dupeTable.bone = tempData.bone
+		dupeTable.material = tempData.material
+		dupeTable.color = tempData.color
+		dupeTable.model = tempData.model
+
+		getPaperdollManager().register( LocalPlayer(), "DEVEDIT", dupeTable )
+	end
+
+	yPos = yPos + applyButton:GetTall() + padding	
+end
+
+local function openPaperDollEditor()
+	local frame = vgui.Create("DFrame")
+	frame:SetSize(400,700)
+	frame:SetTitle("Item Editor")
+	frame:MakePopup()
+	frame:SetPos( ScrW() - 420, 10 )
+
+	local propertySheet = vgui.Create("DPropertySheet", frame)
+	local parent = propertySheet:GetParent()
+	propertySheet:SetSize(parent:GetWide() - 20, parent:GetTall() - 35 )
+	propertySheet:SetPos(10, 25)
+
+	openModelTab(propertySheet)
+
+	openFileTab(propertySheet)
 
 end
 concommand.Add("openPaperDollEditor", openPaperDollEditor)
@@ -284,16 +420,16 @@ local function selectModel()
 	boneChoice:SetPos(10,25)
 	boneChoice:SetMultiSelect(false)
 	boneChoice:AddColumn("SpawnLists")
-	boneChoice:SetSize(200, 170)
+	boneChoice:SetSize(200, 170)	
 
-	local files, folders = file.Find( 'settings/spawnlist/*', "GAME")
+	local files, folders = file.Find( 'settings/spawnlist/default/*', "GAME")
 	for index, name in pairs(files) do
 		local line = boneChoice:AddLine(name)
 		function line:OnSelect()
 			sPanel:Clear()
-			local read = file.Read("settings/spawnlist/"..name, "GAME")
-			if read then
-				local modelTable = util.KeyValuesToTable(read)
+			local read = file.Read("settings/spawnlist/default/"..name, "GAME")
+			if read then 
+				local modelTable = util.KeyValuesToTable(read) 
 				if modelTable != nil && modelTable['contents'] != nil then
 					for name, modelData in pairs( modelTable['contents'] ) do
 
@@ -304,48 +440,52 @@ local function selectModel()
 
 						sPanel:AddPanel( icon, { paperDollModel = modelData['model'] } )
 
-					end
-				end
+					end					
+				end	
 			end
 		end
-	end
+	end	
 
 end
 concommand.Add("openModelSelector", selectModel)
---[[
-local tempEnt = nil
 
-local function paperDoll()
-	if !IsValid(tempEnt) then
-		tempEnt = ents.CreateClientProp()
-	end
-	local bone = tempData.bone
-	local pos
-	local ang
+-- local tempEnt = nil 
 
-	if bone == "none" then
-		pos = LocalPlayer():GetPos()
-		ang = LocalPlayer():GetAngles()
-	else
-		bone = LocalPlayer():LookupBone(tempData.bone)
-		pos,ang = LocalPlayer():GetBonePosition( bone )
-	end
+-- local function paperDoll()
+-- 	if !IsValid(tempEnt) then
+-- 		tempEnt = ents.CreateClientProp()
+-- 	end
+-- 	local bone = tempData.bone
+-- 	local pos
+-- 	local ang
 
+-- 	if bone == "none" then 
+-- 		pos = LocalPlayer():GetPos() 
+-- 		ang = LocalPlayer():GetAngles() 
+-- 	else
+-- 		bone = LocalPlayer():LookupBone(tempData.bone)
+-- 		pos,ang = LocalPlayer():GetBonePosition( bone or "ValveBiped.Bip01_R_Hand" )
+-- 	end
 
+-- 	tempEnt:SetAngles(ang)
+-- 	tempEnt:SetAngles(tempEnt:LocalToWorldAngles(tempData.ang or Angle(0,0,0)))
+-- 	tempEnt:SetPos(pos)
+--  	tempEnt:SetPos(tempEnt:LocalToWorld(tempData.pos or Vector(0,0,0)))
+-- 	tempEnt:SetModel(tempData.model)
 
-	tempEnt:SetAngles(ang)
-	tempEnt:SetAngles(tempEnt:LocalToWorldAngles(tempData.ang or Angle(0,0,0)))
-	tempEnt:SetPos(pos)
- 	tempEnt:SetPos(tempEnt:LocalToWorld(tempData.pos or Vector(0,0,0)))
-	tempEnt:SetModel(tempData.model)
-	tempEnt:SetModelScale(tempData.scale.x, tempData.scale.y, tempData.scale.z )
-	tempEnt:SetColor(tempData.color)
-	tempEnt:SetMaterial(tempData.material)
+-- 	if tempData.scale != Vector(1,1,1) then
+-- 		local mat = Matrix()
+-- 		mat:Scale( tempData.scale )
+-- 		tempEnt:EnableMatrix( "RenderMultiply", mat )
+-- 	end
 
-	-- if DEV_Model_Manager_List != nil && DEV_Model_Manager_List:IsValid() && tempData.Override != nil then
-	-- 	tempEnt:SetColor(tempData.override)
-	-- end
-end
-hook.Add("CalcView", "paperDollHook", paperDoll)
-]]--
+-- 	tempEnt:SetColor(tempData.color)
+-- 	tempEnt:SetMaterial(tempData.material)
+	
+-- 	if DEV_Model_Manager_List != nil && DEV_Model_Manager_List:IsValid() && tempData.Override != nil then
+-- 		tempEnt:SetColor(tempData.override)
+-- 	end
+-- end
+-- hook.Add("CalcView", "paperDollHook", paperDoll)
+
 end

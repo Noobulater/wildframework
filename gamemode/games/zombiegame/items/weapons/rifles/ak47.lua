@@ -19,3 +19,7 @@ end
 classItemData.register( class, generate )
 
 -- EXAMPLE OF A CUSTOM WEAPON
+
+if SERVER then
+	classScarcity.addItemToCategory(4, class)
+end

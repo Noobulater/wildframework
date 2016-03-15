@@ -49,7 +49,9 @@ function classRoundManager.new()
 
 	function public.initialize() -- this is the Initialize point
 		-- always wait for players before the game starts
-		-- public.setGame("Waiting For Players")
+		if SERVER then
+			public.setGame("Waiting For Players")
+		end
 	end
 
 	function public.sustainGame() -- this is where you check the condition, almost like a think hook

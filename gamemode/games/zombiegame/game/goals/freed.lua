@@ -1,4 +1,4 @@
-local goalClass = "lastZombie"
+local goalClass = "freed"
 
 local function generate()
 	local goal = classGoal.new()
@@ -11,7 +11,8 @@ local function generate()
 		local winners = {}
 
 		function goal.condition()
-			if table.Count(player.GetAll()) >= 2 then 
+			local playerCount = table.Count(player.GetAll())
+			if playerCount >= 2 && playerCount <= 5 then 
 				return true
 			end
 			return false
@@ -19,7 +20,7 @@ local function generate()
 
 		function goal.freedFromDigger(dmginfo, savedPlayer)
 			local savior = dmginfo:GetAttacker()
-			if IsValid(savior) && savior:IsPlayer() then
+			if IsValid(savior) && savior:IsPlayer() && savior != savedPlayer then
 				if !table.HasValue(winners, savior) then
 					table.insert(winners, savior)
 				end

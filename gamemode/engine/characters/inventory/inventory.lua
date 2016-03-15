@@ -176,10 +176,10 @@ function classInventory.new( refOwner )
 		local item = public.getSlot( slotTo )
 		public.setSlot( slotTo, swapItem )
 		public.setSlot( slotFrom, item )
-		if slotTo < 0 && item != 0 && item.isWeapon() then
+		if slotTo < 0 && item != 0 && item.isEquipment() then
 			item.unEquip( owner )
 		end
-		if slotFrom < 0 && swapItem != 0 && swapItem.isWeapon() then
+		if slotFrom < 0 && swapItem != 0 && swapItem.isEquipment() then
 			swapItem.unEquip( owner )
 		end		
 	end

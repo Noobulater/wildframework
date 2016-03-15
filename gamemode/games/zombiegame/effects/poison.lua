@@ -18,7 +18,6 @@ local function generate()
 	end
 
 	effect.setDamage( 5 ) -- total Damage
-	effect.effectNextDamage = 0
 
 ---------------------------------------
 
@@ -34,7 +33,12 @@ local function generate()
 			dmginfo:SetDamage( effect.getDamage() )
 			dmginfo:SetDamageType( DMG_POISON )
 			dmginfo:SetInflictor( victim )
-			victim:TakeDamageInfo(dmginfo)
+			
+			if victim:IsNPC() then
+				victim:SetHealth( victim:Health() - effect.getDamage() )
+			else
+				victim:TakeDamageInfo(dmginfo)
+			end
 		end
 	end
 	effect.endEffect = function( victim ) effect.cleanUp( victim ) end

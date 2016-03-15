@@ -70,3 +70,15 @@ function META:applyEffect(class, duration, key)
 		classEffectManager.add( effectData )
 	end
 end
+
+function META:addEffect(effectData)
+	if effectData then
+		print("added")
+		effectData.setVictim( self )
+
+		if duration != nil then
+			effectData.setDuration( duration )
+		end
+		classEffectManager.add( effectData )
+	end 
+end

@@ -3,13 +3,13 @@
 -- Read the comments carefully, you might break something.
 
 -- Gamemode Settings
-GM.Name 		= "Zombie Game"
-GM.Version		= 0.75
+GM.Name 		= "Impurity"
+GM.Version		= 0.90
 GM.Author 		= "Shell Shocked Gaming"
 GM.Email 		= "AmanBentley@gmail.com"
 GM.Website 		= "shellshockedgaming.com"
 
-GM.MountFolders = {"default","openworld"} -- These are the games in your wild/gamemode/games/ folder
+GM.MountFolders = {"zombiegame"} -- These are the games in your wild/gamemode/games/ folder
 
 -- Server Settings
 GM.ChatEnabled	= true		-- Can people talk in chat? (Does not apply to admins)
@@ -21,9 +21,12 @@ GM.TalkDistance	= 1000		-- Only valid if all talk is off. (Does not apply to adm
 GM.RenderDistance = 1000
 GM.CameraDistance = 400 -- usually should keep this half of the render distance
 GM.CamOffset = Vector(-45,0,0)
-GM.useTopDown = true
+GM.useTopDown = false
 -- Game Settings
 GM.MaxCharacters = 3 		-- One character can be used. Doesnt matter for DAYZ mod
+
+-- Sound
+GM.musicVolume = 75
 
 -- Player Settings
 GM.Flashlight	= false 	-- Can people use the flashlight (Does not apply to admins)
@@ -34,7 +37,7 @@ GM.FootSteps	= true		-- Do people make sounds while they walk.
 GM.MaxHealth	= 100 		-- Health people have.
 GM.InvWidth		= 6			-- The width of the player's inventory. (The base inventory)
 GM.InvHeight	= 8 		-- The height of the player's inventory. (The base inventory)
-GM.UnlimitedAmmo = false
+GM.UnlimitedAmmo = true
 GM.FriendlyFire = false
 
 -- GUI

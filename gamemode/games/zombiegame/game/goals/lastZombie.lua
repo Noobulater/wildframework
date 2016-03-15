@@ -1,4 +1,4 @@
-local goalClass = "lastzombie"
+local goalClass = "lastZombie"
 
 local function generate()
 	local goal = classGoal.new()
@@ -19,6 +19,7 @@ local function generate()
 
 		function goal.npcDeath( victim, killer, weapon )
 			if table.Count(goal.getWinners() or {}) > 0 then return end
+			if getGame().getStage() < 2 then return end
 			if GetGlobalInt("zombiesDead") + 1 >= GetGlobalInt("killLimit") then
 				if killer:IsPlayer() then
 					goal.addWinner( killer )

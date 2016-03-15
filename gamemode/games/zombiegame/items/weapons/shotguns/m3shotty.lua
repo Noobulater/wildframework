@@ -7,7 +7,7 @@ local function generate()
 	weapon.setDescription("Hey, I can see through you!")
 	weapon.setFireSound("weapons/m3/m3-1.wav")	
 	weapon.setFireRate( .25 )
-	weapon.setDamage(10)
+	weapon.setDamage(18)
 	weapon.setAccuracy(.1)
 	weapon.setClipSize(4)
 	weapon.setNumBullets(12)
@@ -22,3 +22,7 @@ end
 classItemData.register( class, generate )
 
 -- EXAMPLE OF A CUSTOM WEAPON
+
+if SERVER then
+	classScarcity.addItemToCategory(2, class)
+end

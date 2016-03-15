@@ -16,4 +16,4 @@ local function generate()
 	return difficulty
 
 end
-classDifficulty.register( difficultyClass, generate )
+--classDifficulty.register( difficultyClass, generate )

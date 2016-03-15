@@ -7,7 +7,9 @@ local function generate()
 
 	effect.applyEffect = function( victim )
 		if !victim:IsPlayer() then print("Slow: This effect can't be applied to anything but a player") return end 
-		GAMEMODE:SetPlayerSpeed( victim , 100, 150 )
+		if SERVER then
+			victim:addSpeedModifier(-100, -170)
+		end
 	end
 
 	effect.sustainEffect = function( victim ) end
@@ -16,9 +18,9 @@ local function generate()
 	effect.cleanUp = function( victim )
 		if !victim:IsPlayer() then return end 
 		-- Restores the player to normal status
-		if victim:hasEffect("cripple") then return end
-		if victim:hasEffect("snare") then return end
-		GAMEMODE:SetPlayerSpeed( victim, GAMEMODE.WalkSpeed, GAMEMODE.RunSpeed )
+		if SERVER then
+			victim:addSpeedModifier(100, 170)
+		end
 	end
 
 	if CLIENT then 

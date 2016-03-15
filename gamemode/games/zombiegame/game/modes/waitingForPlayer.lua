@@ -36,7 +36,15 @@ local function createWaitMode()
 				for key, ply in pairs(player.GetAll()) do
 					ply:Spectate(OBS_MODE_NONE)
 				end
-				getGameManager().setGame("Survivor")
+
+				local fileName = string.lower(string.gsub(GAMEMODE.Name, " ", "")) .. "/nextcfg/mode.txt"
+				local content = file.Read(fileName)
+
+				if content then
+					getGameManager().setGame(content)
+				else
+					getGameManager().setGame("Survive")
+				end
 			else
 				getGameManager().setGame("Waiting For Players")
 			end
@@ -53,6 +61,8 @@ end
 
 local function generate()
 	local gameData = classGame.new()
+
+	gameData.setClass(gameClass)
 
 	local waitMode = createWaitMode()
 
